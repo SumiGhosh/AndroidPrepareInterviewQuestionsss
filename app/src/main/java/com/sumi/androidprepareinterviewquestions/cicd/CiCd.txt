@@ -1,0 +1,24 @@
+CI (Continuous Integration)
+* Automatically integrates code changes from multiple contributors into a shared repository
+several times a day.
+* Each merge triggers an automated build process.
+* Automated tests(unit tests, integration tests) are run against the build.
+* Primary goal is to detect integration errors quickly and ensure the codebase is always in a
+working state.
+
+CD (Continuous Delivery)
+* This builds upon CI.
+* After code is successfully built and passes all automated tests in CI, it's automatically released
+to a "staging" or "pre-production" environment.
+* In continuous delivery, there is a manual approval step before the changes are pushed to the
+live production environment.
+* Ensures that every change that passes the tests is avail for release at any time
+
+CD (Continuous Deployment)
+* Same procedures, except here manual approval is not required, once the test cases are passed the changes are automatically
+deployed to the production environment.
+
+
+Check Workflow yml file for details to set up custom GithubAction Workflow
+
+https://github.com/SumiGhosh/CICDApp
