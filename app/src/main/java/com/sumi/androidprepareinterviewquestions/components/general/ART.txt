@@ -1,0 +1,103 @@
+Here are some questions that can be asked in an interview about this topic:
+
+What is the difference between Dalvik Runtime and Android Runtime (ART)?
+Dalvik uses just-in-time (JIT) compilation, while ART employs ahead-of-time (AOT) compilation.
+
+How does Android Runtime (ART) optimize app performance?
+ART utilizes techniques like profile-guided compilation (PGC) to dynamically optimize app
+performance based on real-world usage data.
+
+What is the significance of profiles in the cloud?
+Profiles in the cloud leverage aggregated usage data to enhance app performance for new users
+by precompiling frequently accessed code paths.
+
+Can you explain the role of Android Runtime (ART) in managing app resources?
+ART manages resources like memory allocation and garbage collection to ensure optimal performance
+and stability of the Android system.
+
+How does profile-guided compilation (PGC) contribute to reducing battery consumption?
+By precompiling frequently used code paths, PGC minimizes the need for continuous processing
+during app execution, thus reducing battery consumption.
+
+What challenges did Dalvik Runtime face, and how were they addressed with Android Runtime (ART)?
+Dalvik Runtime faced challenges like performance delays and increased battery consumption,
+which were addressed by ART through features like ahead-of-time (AOT) compilation and optimization
+techniques.
+
+
+***************************************************************************************
+
+ART stands for Android Runtime.
+
+It’s like the engine that powers everything, making sure your apps run smoothly.
+But it wasn’t always this way — before ART, there was Dalvik, an older version that did the same
+job but not as well. With ART, things got faster, more efficient, and overall better.
+And inside ART, there are these cool tricks called Just-In-Time (JIT) and Ahead-of-Time (AOT)
+compilation that make your apps run even faster.
+
+Android Runtime (ART) is the core component of the Android operating system responsible for
+executing and managing Android applications. It takes the bytecode, which is essentially the
+ compiled code of an Android app, and translates it into machine code that the device’s
+ processor can understand and execute efficiently. This process enables apps to run smoothly
+ and interactively on Android devices, providing users with a seamless experience. Additionally,
+ ART manages system resources such as memory allocation and garbage collection, ensuring optimal
+ performance and stability of the overall system. In essence, ART acts as the bridge between the
+ app's code and the hardware, facilitating the smooth operation of Android apps on a variety of
+ devices.
+
+ 1. Dalvik Runtime (DVM) — up to Android K(Kitkat)
+ Dalvik Runtime, often called DVM, was the original engine powering Android apps until the
+ release of Android 4.4 (KitKat). Its primary task was to execute Android applications on
+ smartphones and tablets, ensuring they ran smoothly and interactively.
+
+ When you launched an app on your Android device, Dalvik came into action. It worked by
+ translating the app’s code, which was stored in .dex files, into machine code that the
+ device’s processor could understand and execute. This translation process happened on the fly,
+ meaning it occurred dynamically as the app ran.
+
+ Dalvik employed a technique known as just-in-time (JIT) compilation for this translation process.
+ With the JIT compilation, only the portions of the code that were actively being used were
+ translated into machine code. This approach helped conserve memory since the entire codebase
+ didn’t need to be translated upfront.
+
+ However, while JIT compilation offered memory efficiency, it also had its drawbacks. One
+ downside was that it could cause delays in app startup times because the translation process
+ took time. Additionally, the continuous translation of code during app usage could lead to
+ increased battery consumption, as it requires extra processing power.
+
+
+2. Android Runtime — from Android L(Lollipop)
+Android Runtime (ART) replaced Dalvik as the default runtime environment for Android devices
+starting from Android 5.0 (Lollipop). It serves as the engine responsible for executing
+Android applications and managing their resources effectively.
+
+When you open an app on your Android device, ART steps in to translate the app’s bytecode,
+stored in .dex files, into machine code that the device’s processor can understand and execute.
+Unlike Dalvik, ART uses a different approach called ahead-of-time (AOT) compilation for this
+translation process.
+
+With AOT compilation, ART translates the bytecode into machine code during app installation rather
+than at runtime. This pre-compilation ensures that the code is ready to execute when the app is
+launched, resulting in faster app startup times and smoother overall performance.
+
+In terms of memory management, ART employs garbage collection to reclaim memory occupied by unused
+ objects and resources. This helps ensure optimal performance and stability of the Android system,
+ preventing memory leaks and app crashes.
+
+Overall, Android Runtime (ART) represents a significant advancement over its predecessor, Dalvik.
+With its ahead-of-time compilation and optimization capabilities, ART provides a more efficient
+and responsive runtime environment for Android apps, contributing to a better user experience on
+Android devices.
+
+One major drawback is it took more time to install the app since after downloading the APK the
+whole app needed to be transformed to the machine code and it also took longer to perform a
+system update because all apps need to be reoptimized. Another drawback is in Android L uses a
+lot more RAM than Dalvik.
+
+3.Profile-guided compilation
+Profile-guided compilation is a smart strategy designed to continually enhance the performance of
+Android applications as they run. However, when ART identifies certain methods that are frequently
+accessed, known as “hot” methods, it can preemptively compile and cache them to optimize
+performance. By focusing on compiling these frequently used sections, ART can deliver improved
+performance without sacrificing memory efficiency.
+

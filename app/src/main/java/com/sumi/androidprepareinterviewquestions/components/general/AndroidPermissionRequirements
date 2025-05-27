@@ -1,0 +1,76 @@
+It’s all about protecting your privacy and keeping your information safe.
+
+App permissions help protect your privacy by controlling access to:
+
+Your personal stuff, like your contacts and system settings.
+Actions that could affect your privacy, such as recording audio or connecting to other devices.
+Important features of your phone, like the camera, GPS, and microphone.
+Communication tools, such as sending texts or making calls.
+Hardware features, like Bluetooth and Wi-Fi connections.
+
+Some permissions are granted automatically upon installation, known as install-time permissions.
+In contrast, there are runtime permissions that require your app to actively request permission
+from the user during runtime to proceed with certain actions or data access.
+
+1. Install-time permissions
+Install-time permissions give your app limited access to restricted data or let your app perform
+restricted actions that minimally affect the system or other apps. When you declare install-time
+permissions in your app, an app store presents an install-time permission notice to the user when
+they view an app’s details page. The system automatically grants your app the permissions when the
+user installs your app.
+
+Other:
+Recieve data from network
+view network connections
+full network access
+prevent device from sleeping
+
+1. Normal Permissions: These permissions enable access to data and functionalities beyond the
+app’s sandbox, posing minimal risk to user privacy or other apps’ operation.
+
+Examples of normal permissions include:
+
+ACCESS_NETWORK_STATE: Allows your app to check the network state (e.g., whether the device is
+connected to Wi-Fi or mobile data).
+INTERNET: Enables internet access for fetching data or communicating with servers.
+VIBRATE: Allows your app to vibrate the device.
+WAKE_LOCK: Lets your app keep the device awake while performing specific tasks.
+
+
+2. Signature Permissions: Granted solely to apps signed by the same certificate as the app or
+operating system defining the permission. Example:
+
+Suppose your app provides a custom autofill service. To access this service, other apps must be
+signed with the same certificate as your app. This ensures that only trusted apps can use your
+autofill service.
+
+2. Runtime permissions
+Runtime permissions, also called dangerous permissions, give your app more control over sensitive
+data or actions that can affect your device and other apps. To use these permissions, you need to
+ask the user for permission each time before accessing the data or performing actions. Don’t assume
+you have permission already — always ask the user for it when needed.
+
+When your app requests a runtime permission, the system presents a runtime permission prompt.
+
+Examples:
+
+Camera Permission: Required for taking photos, recording videos, and streaming live video within
+the app.
+Location Permission: This allows your app to access the device’s location for services like maps,
+navigation, and location-based features.
+Contacts Permission: Enables your app to read or write contact information.
+
+3. Special permissions
+Special permissions are tied to specific tasks within an app. They’re set by the platform and device
+ makers, usually to safeguard powerful actions like drawing over other apps. These permissions cover
+ areas that require more protection and involve system-level tasks or sensitive data.
+
+In your phone’s settings, the “Special app access” section holds features you can turn on or off.
+These often correspond to special permissions.
+
+Examples:
+
+Body Sensors Permission: Allows access to health data and step count from paired heart-rate
+monitors, fitness trackers, and other sensors.
+Calendar Permission: Let apps read, create, edit, or delete calendar events.
+Call Logs Permission: Allows reading and writing phone call logs.

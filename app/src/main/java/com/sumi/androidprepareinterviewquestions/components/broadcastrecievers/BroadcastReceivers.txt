@@ -1,0 +1,108 @@
+Broadcast Receiver is a component that allows an app to receive and respond to system-wide
+announcements, called broadcasts. These broadcasts are messages sent by the system or other apps
+to notify other apps of certain events or changes.
+
+System vs Custom Broadcasts
+
+System::
+1. System Broadcasts
+System broadcasts are sent by the system and are typically used to notify apps of system-wide events.
+Device boot completed
+Battery low
+Screen turned on/off
+Network connectivity changed
+
+Here are some examples of system broadcasts:
+android.intent.action.BOOT_COMPLETED: Sent when the device finishes booting
+android.intent.action.BATTERY_LOW: Sent when the battery level falls below a certain threshold
+android.intent.action.SCREEN_ON: Sent when the screen is turned on
+
+2. Custom Broadcasts
+Custom broadcasts, on the other hand, are sent by apps and can be used for various purposes.
+Sending data between apps
+Notifying other apps of events
+Triggering actions in other apps
+
+Here are some examples of custom broadcasts:
+A music app sending a broadcast to notify other apps that a new song is playing
+A weather app sending a broadcast to notify other apps of a weather update
+
+How Broadcast Receivers Work
+Step 1: Register the Broadcast Receiver in the AndroidManifest.xml file
+<receiver android:name=".MyReceiver">
+    <intent-filter>
+        <action android:name="android.intent.action.BATTERY_LOW" />
+    </intent-filter>
+</receiver>
+
+class MyReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        if (intent.action == Intent.ACTION_BATTERY_LOW) {
+            Toast.makeText(context, "Battery is low", Toast.LENGTH_SHORT).show()
+        }
+    }
+}
+
+We create the Broadcast Receiver class (MyReceiver) that extends the BroadcastReceiver class.
+We override the onReceive() method, which is called when the broadcast is received.
+
+Step 3: Send the broadcast
+
+fun sendBroadcast() {
+    val intent = Intent("android.intent.action.BATTERY_LOW")
+    sendBroadcast(intent)
+}
+
+Step 4: Receive the broadcast
+
+When the broadcast is sent, the system matches it to the registered Broadcast Receivers based on
+the actions specified in the intent filter. If a match is found, the system calls the onReceive()
+method of the corresponding Broadcast Receiver.
+
+
+****************************EXAMPLE***********************************
+// Step 1: Define the custom broadcast action
+com.example.ACTION_NEW_MESSAGE
+
+// Step 2: Register the Broadcast Receiver in the AndroidManifest.xml file
+<receiver android:name=".MyCustomReceiver">
+    <intent-filter>
+        <action android:name="com.example.ACTION_NEW_MESSAGE" />
+    </intent-filter>
+</receiver>
+
+// Step 3: Create the Broadcast Receiver class
+class MyCustomReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        if (intent.action == "com.example.ACTION_NEW_MESSAGE") {
+            val message = intent.getStringExtra("message")
+            Toast.makeText(context, "Received message: $message", Toast.LENGTH_SHORT).show()
+        }
+    }
+}
+
+// Step 4: Send the custom broadcast
+fun sendCustomBroadcast(message: String) {
+    val intent = Intent("com.example.ACTION_NEW_MESSAGE")
+    intent.putExtra("message", message)
+    sendBroadcast(intent)
+}
+
+****************************QUESTIONS***********************************
+What is a Broadcast Receiver in Android?
+A component that responds to system-wide announcements or events.
+
+What is the purpose of an Intent Filter in a Broadcast Receiver?
+To specify which broadcasts the receiver should handle.
+
+What is the difference between a synchronous and asynchronous Broadcast Receiver?
+A synchronous receiver runs on the main thread, while an asynchronous receiver runs on a background thread.
+
+When should you unregister a Broadcast Receiver?
+When the receiver is no longer needed, to avoid wasting resources.
+
+Can a Broadcast Receiver start an Activity?
+Yes, by using the startActivity() method.
+
+How do you handle data received in a Broadcast Receiver?
+By using the getIntent() method and extracting the data from the Intent.

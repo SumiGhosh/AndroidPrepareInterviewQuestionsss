@@ -1,0 +1,121 @@
+LiveData is a lifecycle-aware observable data holder class.
+Designed to manage the UI data in a way that respects the lifecycle of Android component.
+It ensures the UI is updated automatically when data changes. Since it is lifecycle aware,
+it only update the UI when the component is active.
+
+Lifecycle Awareness: LiveData is aware of the lifecycle states of the components observing it
+(such as Activities and Fragments). It only updates active observers, which helps prevent crashes
+and memory leaks caused by observing data when the UI is not in the foreground.
+
+Automatic Updates: When the data held by LiveData changes, it notifies all active observers,
+allowing the UI to update seamlessly without manual intervention. This ensures that users see the
+most current information without requiring additional coding to refresh the UI.
+
+Immutable by Default: LiveData is designed to be immutable when exposed to UI components.
+Developers typically use MutableLiveData internally within ViewModels to modify the data while
+keeping the LiveData interface unmodifiable for observers. This promotes a clear separation between
+data and UI, enhancing maintainability.
+
+Thread Safety: LiveData is thread-safe, allowing developers to update it from background threads
+without worrying about synchronization issues.
+
+LiveData ways:
+1. LiveData
+This is the basic form of LiveData. It is read-only, meaning you can observe it but not change it
+directly from outside the class where it’s defined.
+
+// In your ViewModel
+class MyViewModel : ViewModel() {
+    private val _data = MutableLiveData<String>()
+    val data: LiveData<String> get() = _data // Exposing LiveData
+
+    fun updateData(newValue: String) {
+        _data.value = newValue // Only the ViewModel can modify this
+    }
+}
+
+2. MutableLiveData
+This is a subclass of LiveData that allows you to change its value. It is commonly used within
+ViewModels to update the data.
+
+// In your ViewModel
+class MyViewModel : ViewModel() {
+    private val _count = MutableLiveData<Int>(0) // Starts with a value of 0
+    val count: LiveData<Int> get() = _count // Expose it as LiveData
+
+    fun incrementCount() {
+        _count.value = (_count.value ?: 0) + 1 // Increase the count by 1
+    }
+}
+
+3. MediatorLiveData
+This type can observe other LiveData objects. It allows you to combine multiple LiveData sources
+into one.
+
+class MyViewModel : ViewModel() {
+    private val _firstName = MutableLiveData<String>()
+    private val _lastName = MutableLiveData<String>()
+
+    val fullName: MediatorLiveData<String> = MediatorLiveData()
+
+    init {
+        // Combine first and last names
+        fullName.addSource(_firstName) { firstName ->
+            fullName.value = "$firstName ${_lastName.value ?: ""}"
+        }
+        fullName.addSource(_lastName) { lastName ->
+            fullName.value = "${_firstName.value ?: ""} $lastName"
+        }
+    }
+
+    fun setFirstName(name: String) {
+        _firstName.value = name // Set first name
+    }
+
+    fun setLastName(name: String) {
+        _lastName.value = name // Set last name
+    }
+}
+
+Transformations
+LiveData provides transformations to create new LiveData from existing LiveData.
+The most common ones are map and switchMap.
+
+// map
+val upperCaseName: LiveData<String> = Transformations.map(_firstName) { name ->
+    name.toUpperCase() // Convert name to uppercase
+}
+This creates a new LiveData that changes the first name to uppercase whenever it updates.
+
+// switchMap
+val user: LiveData<User> = Transformations.switchMap(userId) { id ->
+    userRepository.getUser(id) // Fetch user based on userId
+}
+In this example, user LiveData will update based on the userId changes.
+
+important points:
+-> Ignoring Threading Issues
+LiveData is designed to be thread-safe, but you still need to ensure that updates to LiveData
+happen on the main thread. If you try to update LiveData from a background thread, you might run
+into issues.
+
+Tip: Always update LiveData on the main thread. Use postValue() when updating from background threads.
+
+// Correct usage in a background thread
+_data.postValue(newData) // Use postValue() for background thread updates
+
+-> Forgetting to Remove Observers
+In some cases, you might forget to remove observers when they are no longer needed, leading to
+memory leaks or unwanted updates.
+
+Tip: While LiveData automatically handles observer removal when the lifecycle owner is destroyed,
+be cautious if you manually manage observers. Use removeObserver() when appropriate.
+
+*******************QUESTIONS***************
+Can you use LiveData with a Service or Repository?
+Yes, LiveData can be used in repositories or services to update UI components, as long as it is
+properly scoped.
+
+What is the purpose of distinctUntilChanged() in LiveData?
+distinctUntilChanged() prevents UI updates if the new data is the same as the previous value,
+reducing unnecessary updates.

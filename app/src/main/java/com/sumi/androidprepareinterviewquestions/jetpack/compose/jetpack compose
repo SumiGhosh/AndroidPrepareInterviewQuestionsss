@@ -1,0 +1,73 @@
+Jetpack Compose is  modern declarative UI toolkit developed to create native Android user interfaces.
+Jetpack compose simplifies the UI development process but also reduces boilerplate code and
+integrates seamlessly with Kotlin.
+
+The term "declarative" means you describe what the UI should look like for a given state rather than
+how to create or update it.
+
+Why compose introduced?
+1. Simplified UI Development: Combines UI layout and logic in kotlin, eliminating the need of xml
+for the UI.
+2. Reduced Boilerplate Code:
+3. Seamless kotlin integration
+4. Improved flexibility and Customization
+5. Optimized Performance
+6. Modern Development practices
+
+Advantage of Compose vs XML
+1. Unified Codebase
+   With Jetpack Compose, both UI and logic are in the same Kotlin file, making the development
+   process more streamlined. No need to switch between XML and Kotlin/Java files.
+
+
+************************************QUESTIONS*********************************
+What is Jetpack Compose?
+Jetpack Compose is a modern, declarative UI toolkit for building native Android UIs using Kotlin.
+
+Why was Jetpack Compose introduced?
+It was introduced to simplify UI development, reduce boilerplate, and align Android with modern
+declarative programming trends.
+
+How does Jetpack Compose differ from XML-based UI development?
+Compose uses Kotlin code for UI creation, offering a declarative approach, while XML-based UI
+follows an imperative style with separate layout files.
+
+What are Composables in Jetpack Compose?
+Composables are Jetpack Compose’s building blocks, defined as Kotlin functions annotated with
+@Composable to describe UI elements.
+
+What are the key benefits of Jetpack Compose?
+Reduced boilerplate, real-time previews, easy animations, better state management, and integration
+with Kotlin.
+
+How does Jetpack Compose handle state?
+Jetpack Compose uses remember and mutableStateOf to manage state, automatically re-rendering
+affected UI components on state changes.
+
+What is the difference between imperative and declarative programming in UI development?
+Imperative programming (XML) tells the UI how to update, while declarative programming (Compose)
+describes what the UI should look like for a given state.
+
+Does Jetpack Compose support Material Design?
+Yes, Jetpack Compose has built-in support for Material Design components and themes.
+
+Can Jetpack Compose be used with existing XML-based apps?
+Yes, Compose can coexist with XML-based Views, allowing gradual migration of apps.
+
+What is remember in Jetpack Compose?
+remember is a function used to retain the state of a composable during recompositions.
+
+What is Jetpack Compose Multiplatform?
+Jetpack Compose Multiplatform allows developers to build UIs for Android, desktop, and web using
+a shared codebase.
+
+How does Jetpack Compose improve performance?
+By only recomposing parts of the UI affected by state changes, reducing overhead compared to
+traditional View hierarchies.
+
+What is the role of Modifier in Jetpack Compose?
+Modifier is used to style and configure composables, such as setting padding, alignment, or
+click actions.
+
+Is Jetpack Compose backward compatible with older Android versions?
+Yes, it supports Android 5.0 (API level 21) and higher, ensuring compatibility with most devices.

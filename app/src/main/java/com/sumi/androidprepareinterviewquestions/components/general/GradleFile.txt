@@ -1,0 +1,128 @@
+Gradle file is a powerful build automation tool which handles compiling the code and managing
+dependencies to packaging the application for deployment.
+
+In an Android Project gradle files are divided into two types:
+
+1. Project Level Gradle file, here we have a configuration settings and dependencies which applies
+to all modules in the project.
+
+2. Module Level Gradle file, this contains module level configuration settings and dependencies,
+which applies to its own module. Thus each module level file can be tailored according to their needs.
+
+--> Project Level Gradle Contains:
+buildScript - This block contains details of settings and dependencies which helps in running the
+gradle itself. This includes specifying the repository for the build script and classpath dependencies
+needed for the build.
+dependencies - Global dependencies are declared here, where all the modules can access them. Generally
+these dependencies are build tools and plugins related with running the build process.
+
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.0.0'
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.0'
+    }
+}
+
+allprojects - The allprojects block applies configurations, such as repositories, to all modules
+within the project. This helps maintain consistency across the project.
+
+The allprojects block is used here to ensure that every module in the project uses the same
+repositories for fetching dependencies. This centralizes repository management and reduces redundancy
+
+repositories - Repositories at the project level build.gradle file specify where Gradle should look
+for dependencies. These repositories apply globally across all modules, ensuring that dependencies
+are fetched consistently.
+
+plugins - Plugins applied at the project level affect all modules in the project. These plugins
+provide additional functionalities and build features required across the entire project.
+
+plugins {
+    id 'com.github.ben-manes.versions' version '0.39.0' apply false
+}
+
+This example shows the application of a plugin (com.github.ben-manes.versions) at the project level.
+The apply false statement indicates that the plugin is available but not automatically applied to
+all modules, giving you control over where it should be used.
+
+
+--> Module Level Gradle
+plugins - Plugins are used to add specific functionality to the Gradle build process. They help
+integrate tools and libraries into your project.
+
+plugins {
+    id 'com.android.application'
+    id 'kotlin-android'
+    id 'kotlin-kapt'
+}
+
+com.android.application: This plugin is necessary for building Android applications, enabling Android-specific build tasks and features.
+kotlin-android: Adds Kotlin support to the Android project, allowing you to use Kotlin language features.
+kotlin-kapt: Adds support for Kotlin annotation processing, required for libraries that use annotations.
+
+android - The android block contains configuration options related to the Android build, such as
+SDK versions, build types and other Android-specific settings.
+
+android {
+    compileSdk 33
+    defaultConfig {
+        applicationId "com.example.myapp"
+        minSdkVersion 21
+        targetSdkVersion 33
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            shrinkResources false
+        }
+    }
+}
+
+minifyEnabled: Indicates whether code shrinking (e.g., ProGuard or R8) is enabled for this build type.
+proguardFiles: Specifies ProGuard configuration files for code obfuscation and optimization.
+
+compileOptions - The compileOptions block sets Java compiler options, such as the Java version
+compatibility.
+
+compileOptions {
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
+}
+
+sourceCompatibility: Defines the Java version used for compiling the code.
+targetCompatibility: Specifies the Java version that the compiled code should be compatible with.
+
+kotlinOptions - The kotlinOptions block configures Kotlin compiler options for the project
+otlinOptions {
+    jvmTarget = "17"
+}
+
+jvmTarget: Specifies the JVM version that the Kotlin code should be compatible with.
+
+buildFeatures
+The buildFeatures block enables or disables specific Android build features, such as Data Binding or View Binding.
+
+buildFeatures {
+    dataBinding true
+    viewBinding true
+}
+
+dependencies - The dependencies block specifies the libraries and modules that the project depends on.
+
+Why gradle files are important and required?
+
+1. Dependency Management - Easy to maintain external dependencies, handles versions.
+2. Build Customization - Defines different build types and flavours. Allowing to have tailored
+build environment for the development and testing.
+3. Integrating with Build Tools - Facilitates integration with CI/CD system and code quality tools
+to automate workflow.
+4.
+
+
+
+

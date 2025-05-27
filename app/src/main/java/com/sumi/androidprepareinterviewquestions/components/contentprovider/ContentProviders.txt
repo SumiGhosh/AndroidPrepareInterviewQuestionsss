@@ -1,0 +1,186 @@
+Content providers are powerful tool, that allows apps to share and manage data.
+Content providers acts like a bridge between the apps, enabling them to access and modify data in
+a secure and controlled way.
+This allows the app to share data and perform CRUD operation like creating, reading, updating and
+deleting the data.
+
+Built-In vs Third Party Content Providers
+
+Built-In::
+ContactsContract: Grants access to contact information like phone numbers and email addresses.
+MediaStore: Manages media files like videos, photos, and audio recordings.
+Calendar: Provides access to calendar data.
+UserDictionary: Stores custom words for keyboard app suggestions.
+
+Third Party::
+Firebase Realtime Database: A cloud-based database for real-time data synchronization.
+SQLite: A lightweight database engine for efficient data storage and retrieval.
+Google Drive: A cloud-based file storage and sharing service.
+Twitter API: Provides access to Twitter data like tweets and direct messages.
+
+Accessing Data with Content Provider ->
+1. Determining Content URIs
+Format -> content://authority/path/id
+I. content:// This is the scheme that helps in identifying the URI as a content URI.
+II. authority It’s usually a package name of the app that provides the content provider. However,
+        it could also be a unique identifier that an app developer is free to specify in his own way.
+III. path (Optional) It represents the type or category of the data being accessed.
+// Example with path
+content://com.example.myapp/songs
+// Example without path
+content://com.example.myapp -> Referring entire content provider
+
+2. Obtaining a Content Resolvers Instance.
+The App developer should provide an instance to content resolver which provide access to
+content provider.
+val cr = context.contentResolver
+
+3. Query the content provider
+Querying the Content Provider in Android can be done using the ContentResolver’s query() method.
+Supported Parameters::
+Content URI
+projection (the columns to be returned)
+selection (criteria for selecting the data)
+selectionArgs (arguments for the selection criteria)
+sortOrder (sorting order for the returned data)
+Cancellation signal (in order to cancel the operation, if needed)
+
+Methods of Content Provider in Android ->
+I. onCreate()
+It is responsible for initializing essential resources, such as a database, and returns a boolean
+value to indicate the success of the initialization process.
+override fun onCreate(): Boolean {
+    // Perform necessary resource initialization, such as database setup
+    dbHelper = MyDatabaseHelper(context!!)
+    database = dbHelper.writableDatabase
+    return database != null
+}
+
+II. query()
+The query() method is another fundamental method in an Android content provider that handles data
+retrieval operations. It is responsible for querying the data source of the Content Provider and
+returning the requested data as a Cursor object. Other apps can use this method to fetch data from
+the content provider in Android.
+
+@Nullable
+override fun query(uri: Uri, projection: Array<String>, selection: String?, selectionArgs: Array<String>?, sortOrder: String?): Cursor? {
+    val db = dbHelper.readableDatabase
+    var cursor: Cursor?
+    when (uriMatcher.match(uri)) {
+        ALL_ROWS -> {
+            cursor = db.query(TABLE_NAME, projection, selection, selectionArgs, null, null, sortOrder)
+        }
+        SINGLE_ROW -> {
+            selection = "$COLUMN_ID=?"
+            selectionArgs = arrayOf(uri.lastPathSegment)
+            cursor = db.query(TABLE_NAME, projection, selection, selectionArgs, null, null, sortOrder)
+        }
+        else -> throw IllegalArgumentException("Unknown URI: $uri")
+    }
+    cursor?.setNotificationUri(context.contentResolver, uri)
+    return cursor
+}
+
+III. insert()
+The insert() method in an Android content provider is responsible for inserting new data into the
+database or any other data source of the Content Provider in Android.
+
+@Nullable
+override fun insert(uri: Uri, values: ContentValues): Uri? {
+    val db = dbHelper.writableDatabase
+    val id = db.insert(TABLE_NAME, "", values)
+    if (id == -1L) {
+        throw SQLException("Failed to insert row into $uri")
+    }
+    val insertedUri = ContentUris.withAppendedId(uri, id)
+    context.contentResolver.notifyChange(uri, null)
+    return insertedUri
+}
+
+IV. update()
+The update() method is responsible for updating existing data in the database. Other apps can use
+this method to modify existing data in the content provider.
+
+override fun update(uri: Uri, values: ContentValues, selection: String, selectionArgs: Array<String>): Int {
+    val db = dbHelper.writableDatabase
+    val rowsUpdated = db.update("users", values, selection, selectionArgs)
+    if (rowsUpdated > 0) {
+        context.contentResolver.notifyChange(uri, null)
+    }
+    return rowsUpdated
+}
+
+V. delete()
+The delete() method deletes the data from the data source of the Content Provider in Android.
+The delete() method can also be used by other applications to remove the data from the content
+provider in Android.
+
+override fun delete(uri: Uri, selection: String, selectionArgs: Array<String>): Int {
+    val db = dbHelper.writableDatabase
+    val rowsDeleted = db.delete(TABLE_NAME, selection, selectionArgs)
+    if (rowsDeleted > 0) {
+        context.contentResolver.notifyChange(uri, null)
+    }
+    return rowsDeleted
+}
+
+VI. getType()
+The getType() method helps in retrieving the MIME (Multipurpose Internet Mail Extensions) type of
+the data associated with a given URI. The MIME type is a string that helps in identifying the
+format of the data that is being transferred between the apps.
+
+@Nullable
+override fun getType(uri: Uri): String? {
+    return when (uriMatcher.match(uri)) {
+        ALL_ROWS -> "vnd.android.cursor.dir/vnd.$AUTHORITY.$TABLE_NAME"
+        SINGLE_ROW -> "vnd.android.cursor.item/vnd.$AUTHORITY.$TABLE_NAME"
+        else -> throw IllegalArgumentException("Unknown URI: $uri")
+    }
+
+Working of the Content Provider ->
+As the final upshot, we can now illustrate all the components involved with the working of a
+Content Provider in Android.
+
+A Content Provider has to be defined by creating a user-specific class that extends the
+ContentProvider base class.
+The content provider should also be registered in the application’s Manifest file by adding a
+<provider> element inside the <application> element.
+    <provider
+        android:name=".MyContentProvider"
+        android:authorities="com.example.myapp"
+        android:exported="true"
+        android:enabled="true"/>
+
+<provider android:name=".MyContentProvider">: Declares a content provider named MyContentProvider.
+android:authorities="com.example.myapp.provider": Specifies a unique authority string that identifies the content provider.
+android:exported="false": Indicates whether the content provider is accessible by other applications. Setting it to false restrict access.
+
+
+********************************************************
+Here are some questions that can be asked in an interview about this topic:
+
+What is a Content Provider in Android?
+A Content Provider is a component that manages a central repository of data, providing a standardized interface for accessing and modifying data.
+
+What is the purpose of a Content Provider?
+To provide a way for applications to share data with each other, while maintaining data integrity and security.
+
+What is the difference between a Content Provider and a database?
+A Content Provider is a wrapper around a database, providing a higher-level interface for accessing and modifying data.
+
+How do you define a Content Provider in Android?
+By extending the ContentProvider class and overriding its methods, such as query(), insert(), update(), and delete().
+
+What is the role of the UriMatcher in a Content Provider?
+To match incoming URIs to specific data queries, allowing the Content Provider to determine how to handle the request.
+
+How do you handle data updates in a Content Provider?
+By using the notifyChange() method to notify registered observers that the data has changed.
+
+What is the difference between a Content Resolver and a Content Provider?
+A Content Resolver is a client that requests data from a Content Provider, while a Content Provider is the component that manages the data.
+
+How do you secure data in a Content Provider?
+By using permissions, such as read and write permissions, to control access to the data.
+
+

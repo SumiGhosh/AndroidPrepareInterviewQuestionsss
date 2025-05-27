@@ -1,0 +1,38 @@
+ Garbage collection is the automated solution that handles the dynamic allocation and
+ deallocation of memory, ensuring smooth app performance. It systematically identifies
+ and removes unused objects, freeing up memory resources without developers having to
+ micromanage every byte.
+
+ How Garbage Collection Works in Android?
+ Garbage collection in Android is triggered under several scenarios. For instance,
+ when the system is close to running out of memory, it will trigger garbage collection
+ to free up some space. Similarly, if the size of the heap (the area of memory used for
+ dynamic memory allocation) hits a certain limit, garbage collection may be triggered.
+
+ The actual garbage collection is done using a Mark-Sweep algorithm.
+ This algorithm works in two phases:
+ Mark Phase: The garbage collector traverse through the object graph, starting from the root
+ objects, and marks every object it reaches.
+ Sweep Phase: Garbage collector goes through the heap, looking for unmarked objects. These
+ are objects that were not reached during the mark phase, indicating they are not in use
+ and their memory can be freed.
+
+ Questions
+
+ What is the concept of Garbage Collection (GC) in the context of programming languages?
+ Garbage Collection (GC) is a form of automatic memory management utilized by programming
+ languages. It identifies and recovers the portions of memory that are no longer in use by
+ the program.
+
+ How does Garbage Collection work in Android?
+ In Android, Garbage Collection is done using a Mark-Sweep algorithm. It marks all
+ accessible objects and then sweeps through the heap, reclaiming all unmarked objects.
+
+ What is the difference between automatic and manual garbage collection?
+ Automatic garbage collection is a process where the system identifies and clears memory
+ that’s no longer in use, without any explicit instruction from the programmer.
+
+ What is the Mark-and-Sweep algorithm?
+ In Mark-and-Sweep, GC traverses objects on the heap, marking those accessible from
+ roots as ‘alive’. Post traversal, it sweeps through the heap, deallocating unmarked
+ (‘dead’) objects.

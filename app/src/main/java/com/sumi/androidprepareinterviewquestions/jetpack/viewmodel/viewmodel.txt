@@ -1,0 +1,189 @@
+A ViewModel is a class designed to store and manage UI data in a lifecycle-conscious way. Its main
+job is to hold data that your UI components need and ensure that this data survives configuration
+changes, such as when a device is rotated. By using a ViewModel, you can ensure that your app’s
+data remains intact, providing a smoother experience for users without unnecessary reloads or
+resets.
+
+The lifecycle of a ViewModel:
+The lifecycle of a ViewModel is tied directly to its scope. A ViewModel remains in memory until the
+ViewModelStoreOwner to which it is scoped disappears. This may occur in the following contexts:
+
+In the case of an activity, when it finishes.
+In the case of a fragment, when it detaches.
+In the case of a Navigation entry, when it’s removed from the back stack.
+
+class MyViewModel : ViewModel() {
+    val data: LiveData<String> = MutableLiveData()
+
+    fun fetchData() {
+        // Fetch data from API or repository
+    }
+}
+
+class MyActivity : AppCompatActivity() {
+    private lateinit var viewModel: MyViewModel
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        viewModel = ViewModelProvider(this).get(MyViewModel::class.java)
+        viewModel.data.observe(this, Observer { data ->
+            // Update the UI
+        })
+
+        viewModel.fetchData()  // Only fetched once, not on screen rotation
+    }
+}
+
+Important uses
+1. Lifecycle aware (viewModel destroyed when out of scope, not destroyed on config changes)
+2. Data Persistence across configuration changes (Since on rotation the viewmodel is not destroyed)
+3. Clear separation of concerns (viewModels all the data processing and business logic from UI)
+4. Easy Testing and Maintainability (Because ViewModel does not contain any UI elements or lifecycle
+methods, it can be tested in isolation using unit tests.)
+5. ViewModel Scoping (
+Activity-scoped ViewModel: When the ViewModel is scoped to an Activity,
+it can be shared across all Fragments within that Activity. This allows you to share data between
+Fragments without having to pass data manually.
+
+Fragment-scoped ViewModel: A ViewModel can also be scoped to a single Fragment, where it holds data
+ only relevant to that Fragment and is destroyed when the Fragment is removed.)
+
+ class SharedViewModel : ViewModel() {
+     val selectedItem = MutableLiveData<String>()
+ }
+
+ class FirstFragment : Fragment() {
+     private lateinit var viewModel: SharedViewModel
+
+     override fun onCreateView(
+         inflater: LayoutInflater, container: ViewGroup?,
+         savedInstanceState: Bundle?
+     ): View? {
+         val view = inflater.inflate(R.layout.fragment_first, container, false)
+         viewModel = ViewModelProvider(requireActivity()).get(SharedViewModel::class.java)
+
+         // Set selected item
+         viewModel.selectedItem.value = "Item 1"
+         return view
+     }
+ }
+
+ class SecondFragment : Fragment() {
+     private lateinit var viewModel: SharedViewModel
+
+     override fun onCreateView(
+         inflater: LayoutInflater, container: ViewGroup?,
+         savedInstanceState: Bundle?
+     ): View? {
+         val view = inflater.inflate(R.layout.fragment_second, container, false)
+         viewModel = ViewModelProvider(requireActivity()).get(SharedViewModel::class.java)
+
+         // Observe selected item
+         viewModel.selectedItem.observe(viewLifecycleOwner, Observer { item ->
+             // Update UI with the selected item
+             view.findViewById<TextView>(R.id.textView).text = item
+         })
+         return view
+     }
+ }
+
+ Other related things when using viewModel:
+
+1. Use LiveData or StateFlow to Manage Data Observability
+To ensure that UI components are updated only when they are in an active state (e.g. when the
+screen is visible), always use LiveData or StateFlow in your ViewModel. These lifecycle-aware
+observables ensure that UI updates are made efficiently without causing memory leaks.
+
+LiveData works well for most cases as it is lifecycle-aware and automatically stops updating when
+the Activity or Fragment is in the background.
+
+StateFlow or SharedFlow from Kotlin Coroutines provides more flexibility and works well with
+coroutine-based code.
+
+2. Expose Immutable LiveData
+
+Always expose immutable LiveData (i.e., LiveData) to your UI components and keep the mutable
+version (MutableLiveData) private in the ViewModel. This prevents external classes from modifying
+the LiveData directly, promoting better encapsulation.
+
+class MyViewModel : ViewModel() {
+    // MutableLiveData is private
+    private val _data = MutableLiveData<String>()
+
+    // Expose only immutable LiveData
+    val data: LiveData<String> = _data
+
+    fun updateData(newData: String) {
+        _data.value = newData
+    }
+}
+
+3. Use ViewModel to Store UI-Related Data Only
+
+The ViewModel should be used to store data that is related to the UI and might be needed again
+after configuration changes (e.g., screen rotations). Avoid storing non-UI-related data (like
+database connections, network clients, or heavy resources) in ViewModel, as this can lead to memory
+leaks.
+
+4. Avoid Context Reference in ViewModel
+The ViewModel should not hold any reference to an Activity, Fragment, or Context. Since ViewModels
+outlive the UI components, storing context in a ViewModel can lead to memory leaks.
+
+5. Use ViewModelFactory for ViewModel with Parameters
+
+If your ViewModel requires parameters (e.g., dependency injection or data passing), use
+ViewModelFactory to create instances of the ViewModel with those parameters. This is important
+when you need to pass specific data, such as a repository or user ID, to the ViewModel.
+
+class MyViewModelFactory(private val repository: MyRepository) : ViewModelProvider.Factory {
+
+    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(MyViewModel::class.java)) {
+            return MyViewModel(repository) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
+    }
+}
+
+class MyActivity : AppCompatActivity() {
+
+    private lateinit var viewModel: MyViewModel
+    private val repository = MyRepository()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+        // Use ViewModelFactory to provide repository to ViewModel
+        viewModel = ViewModelProvider(this, MyViewModelFactory(repository)).get(MyViewModel::class.java)
+    }
+}
+
+6. Use Hilt for Dependency Injection in ViewModel
+Using a dependency injection framework like Hilt simplifies the process of injecting dependencies
+(like repositories) into ViewModels. Hilt handles the ViewModel instantiation with required
+parameters automatically, making the code more concise and scalable.
+
+@HiltViewModel
+class MyViewModel @Inject constructor(private val repository: MyRepository) : ViewModel() {
+    // ViewModel logic using repository
+}
+
+@AndroidEntryPoint
+class MyActivity : AppCompatActivity() {
+    private val viewModel: MyViewModel by viewModels()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        // Hilt takes care of ViewModel injection
+    }
+}
+
+********************** Questions *******************
+
+What is the purpose of viewModelScope in ViewModel?
+viewModelScope is a coroutine scope tied to the ViewModel’s lifecycle, allowing you to launch
+coroutines that are automatically canceled when the ViewModel is cleared.

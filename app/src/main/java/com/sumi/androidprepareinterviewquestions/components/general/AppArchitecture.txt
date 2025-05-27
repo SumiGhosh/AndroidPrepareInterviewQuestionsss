@@ -1,0 +1,159 @@
+App Architecture is required to bring a structure, clarity and long term sustainability to your
+codebase. So the architecture helps in dividing the app into distinct sections, where each section
+addresses a specific responsibility or concern. This helps the code more organized, maintainable,
+scalable and testable.
+
+To meet these needs, your app architecture should follow some key principles.
+
+1. Separation of Concerns(SoC)
+A well-structured Android app typically follows the MVVM (Model-View-ViewModel) architecture or
+uses Clean Architecture, both of them follows SoC. The key principle is separating different tasks
+in your app. It’s not a good idea to put all your code in an Activity or Fragment.
+
+- Model (Data Layer)
+Concern:
+    Handling data (e.g. from a database, network, or local cache).
+Responsibilities:
+    Business logic
+    Data fetching & persistence
+    Repository pattern
+
+- ViewModel (Domain/Logic Layer)
+Concern:
+    Preparing data for the UI, coordinating between the View and Model.
+Responsibilities:
+    Holds UI-related state
+    Calls repositories or use-cases
+    Exposes LiveData/StateFlow for the UI to observe
+
+- View (UI Layer - Activities/Fragments/Composable)
+Concern:
+    Displaying data and handling user interactions.
+Responsibilities:
+    Render UI based on state
+    Forward events to the ViewModel
+    Observe LiveData/StateFlow
+
+Why It's Important
+Testability: You can test each layer in isolation.
+Reusability: Logic is not tied to the UI, so components can be reused.
+Maintainability: It's easier to update or replace one part without affecting others.
+Scalability: Clean separation supports large, complex projects.
+
+Clean Architecture applies SoC even further:
+UI (View)
+⬇
+Presentation (ViewModel/Use Cases)
+⬇
+Domain (Business Logic)
+⬇
+Data (Repositories, API, DB)
+
+Key Points
+Architecture enforces boundaries between layers (UI, logic, data).
+Keeps UI code clean and separate from business logic and data handling.
+Makes your code easier to understand and debug.
+
+2. UI driven from Data Models
+Data models represents data in your app, which should be independent from user interface or any other component.
+Still they can be destroyed by the system(Android OS) if it removes the process from the memory.
+
+Using persistent model is advantageous because;
+- To prevent data loss if your app was terminated to free up resources.
+- Your app remain functional event though the network is unavailable.
+- By structuring the data models around Architecture, you are enhancing the testability of the code.
+
+
+3. Single Source of Truth
+
+4. Uni Directional Flow
+
+***************************************************************************************************
+
+Modern App Architecture
+According to the key architectural principles we’ve discussed earlier, every app should consist of
+at least two essential layers:
+- The User Interface (UI) layer, responsible for showing data to users on the screen.
+- The Data layer, where the core logic of your app resides, managing and providing access to
+application data.
+
+Additionally, you can incorporate a Domain layer to streamline and recycle interactions between the
+UI and Data layers.
+
+1. UI layer
+The purpose of the UI layer, also known as the presentation layer, is to showcase the app’s data on
+the screen. Whenever there’s a change in the data, be it from user actions (like tapping a button)
+or external factors (like receiving data from a network), the UI should promptly update to reflect
+these changes.
+
+The UI layer comprises two main components:
+- Display elements responsible for presenting data visually on the screen. These elements are crafted
+using Views or Jetpack Compose functions.
+- State managers, such as ViewModel classes, which not only store data but also make it accessible to
+the UI and manage associated logic. It retrieves data from data layer, process if it needed, and
+exposes to the UI layer for display.
+
+2. Data Layer
+Data Layer of an app holds the essential business logic, which is like the brain behind how app
+manages and interacts with data.
+Within data layer you have repositories, where each repository is tailored to handle a specific
+type of data, for eg: in weather app you might a repository to fetch data and another for payment.
+
+Repositories handle various tasks, including:
+Providing access to data for the rest of the app.
+Keeping track of changes made to the data in one central place.
+Managing conflicts that may arise when dealing with multiple data sources.
+Shielding the rest of the app from the complexities of how data is obtained and managed.
+Implementing crucial business logic related to data operations.
+
+In addition to repositories, there are data source classes, which serve as connectors between the
+app and specific data sources. Each data source class focuses on working with just one type of data
+source, whether it’s a file, a network connection, or a local database.
+
+3. Domain layer
+The domain layer, positioned between the UI and data layers, isn’t mandatory but serves a vital
+purpose when handling complex or reusable business logic in an app.
+This layer encapsulates the heart of your app’s logic, ensuring that it remains independent of
+specific UI or data concerns. It’s like a toolbox containing specialized tools (use cases or
+interactors) that perform specific tasks.
+
+
+*****************************************
+
+What is the separation of concerns in Android app development?
+Separation of concerns refers to dividing an app’s functionality into distinct modules to enhance
+maintainability and scalability.
+
+Explain the concept of unidirectional data flow in Android.
+Unidirectional data flow ensures that data changes propagate in a single direction, simplifying
+state management and reducing bugs.
+
+What are the key components of modern Android app architecture?
+Modern Android app architecture typically consists of UI layer, data layer, and optionally, a
+domain layer to encapsulate business logic.
+
+How does the UI layer differ from the domain layer in Android app architecture?
+The UI layer focuses on displaying data to users, while the domain layer handles complex business
+logic and ensures data consistency.
+
+What is the role of repositories in Android app development?
+Repositories act as mediators between the UI and data layers, providing a centralized interface
+for accessing and managing app data.
+
+How does the concept of a Single Source of Truth (SSOT) contribute to app architecture?
+SSOT ensures that each piece of data has a definitive source, enhancing data consistency and
+simplifying data management.
+
+Why is it important to drive the UI from data models in Android app development?
+Driving the UI from data models ensures a consistent representation of app data and enhances
+maintainability by separating concerns.
+
+What are the benefits of implementing clean architecture in Android apps?
+Clean architecture improves code readability, testability, and maintainability by enforcing
+separation of concerns and modularizing code.
+
+How can Android Jetpack components facilitate the implementation of modern app architecture?
+Android Jetpack components such as ViewModel, LiveData, and Room simplify the implementation of
+modern app architecture by providing lifecycle-aware data management and persistence solutions.
+
+

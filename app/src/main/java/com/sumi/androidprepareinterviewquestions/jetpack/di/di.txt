@@ -1,0 +1,68 @@
+It is a critical design pattern for managing dependencies effectively.
+Managing the dependencies manually can lead to tight coupling, boilerplate code, and challenges
+in testing.
+
+Highlights:
+-> Reduces Boilerplate Code
+Manually creating instances of classes and managing their dependencies can lead to repetitive and
+complex code. DI frameworks like Hilt and Dagger automate this process, reducing the amount of
+boilerplate code and making the code cleaner.
+
+-> Improves Code Maintainability and Readability
+DI ensures that each class has a single responsibility and doesn’t create or manage its own
+dependencies.
+
+-> Facilitates Testing and Mocking
+Testing classes in isolation is much easier when dependencies can be replaced with mock
+implementations.
+
+-> Promotes Reusability
+With DI, dependencies are injected as needed, making it easier to reuse common components
+(e.g., repositories, network clients) across different parts of the application.
+
+-> Manages the Object Lifecycle Efficiently
+ DI frameworks handle the lifecycle of dependencies automatically, ensuring proper creation, reuse,
+ and destruction of objects.
+
+ Types of DI injection
+
+ 1. Constructor injection
+ 2. Method injection
+ 3. Field injection
+
+
+ Hilt Points:
+
+ 1. @HiltAndroidApp - Add it in the application class
+ This enables hilt code generation and initialized dependency injection.
+
+ 2. @AndroidEntryPoint - This annotation marks the Activity or Fragment where you want to
+ inject dependencies.
+
+ 3. In Hilt, modules are used to define how to provide instances of your dependencies.
+ Create a module class and annotate it with @Module and @InstallIn.
+
+ @Module
+ @InstallIn(SingletonComponent::class)
+ object AppModule {
+     @Provides
+     @Singleton // Ensures a single instance is provided throughout the app
+     fun provideMyRepository(): MyRepository {
+         return MyRepositoryImpl() // Provide the implementation of the repository
+     }
+ }
+
+ Popular Annotations in Hilt
+ @HiltAndroidApp: Used on the application class to trigger Hilt’s code generation and set up the
+ dependency graph.
+ @AndroidEntryPoint: Applied to Android components (Activities, Fragments, Services) to enable
+ Hilt’s dependency injection.
+ @Module: Marks a class as a module that provides dependencies.
+ @InstallIn: Specifies the Hilt component in which the module should be installed (e.g.,
+ SingletonComponent, ActivityComponent).
+ @Provides: Indicates a method that provides a dependency, allowing Hilt to know how to
+ create that instance.
+ @Singleton, @ActivityScoped, @FragmentScoped, @ViewModelScoped: Annotations to define the
+ lifecycle and scope of the provided dependencies, ensuring they are created and managed appropriately.
+
+

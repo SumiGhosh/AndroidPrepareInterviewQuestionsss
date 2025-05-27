@@ -1,0 +1,265 @@
+Question>>>: What is the difference between an Activity and a Fragment?
+Answer---: An Activity is a standalone component representing a single screen,
+whereas a Fragment is a modular section of an Activity, allowing for more flexible
+and reusable UI designs. Fragments must be hosted within an Activity and have their
+own lifecycle, closely tied to their host Activity.
+
+***********************************************************************************
+Question>>>: How does the Activity Manager function in Android?
+Answer---: The Activity Manager is a system service in Android that manages the lifecycle
+and stack of Activities. It handles tasks such as starting, stopping, and resuming
+Activities, maintaining the back stack, and facilitating transitions between different
+Activities to ensure seamless user navigation.
+
+***********************************************************************************
+Question>>>: What are Intents, and how are they used in Activity management?
+Answer---: Intents are messaging objects used to request actions from other components,
+such as starting an Activity, Service, or delivering a broadcast. They can be explicit
+(targeting a specific component) or implicit (declaring a general action to be handled
+by any suitable component). Intents are fundamental in facilitating communication
+between different parts of an application and between applications.
+
+***********************************************************************************
+Question>>>: How can you handle configuration changes, like screen rotations, in an Activity?
+Answer---: To manage configuration changes, override the onSaveInstanceState() method to save the
+current state before the Activity is destroyed. After the configuration change, retrieve the
+saved state in onCreate() or onRestoreInstanceState() to restore the UI to its previous state.
+Additionally, declaring specific configurations in the manifest can prevent the system from
+restarting the Activity.
+
+***********************************************************************************
+Question>>>: Explain the difference between onPause() and onStop() in the Activity lifecycle.
+Answer---: onPause() is called when the Activity is partially obscured by another Activity,
+indicating that the user is leaving but the Activity is still visible. It's typically used to
+pause ongoing actions that shouldn't continue while the Activity isn't in the foreground.
+onStop() is called when the Activity is no longer visible to the user, and it's used to
+release resources that are not needed while the Activity is not in use.
+
+***********************************************************************************
+Question>>>: What is the back stack in Android, and how does it affect Activity navigation?
+Answer---: The back stack is a collection of Activities that the user has visited, managed by the
+Activity Manager. When a new Activity is started, it's placed on top of the stack. Pressing
+the back button removes the top Activity, revealing the previous one. Proper management of
+the back stack is essential for intuitive navigation within an application.
+
+***********************************************************************************
+Other Questions:
+
+Why do we need to call setContentView() in onCreate() of the Activity class?
+setContentView() is used to set the layout for the activity, defining its user interface.
+It should be called to provide the visual structure for the activity.
+
+When only onDestroy is called for an activity without onPause() and onStop()?
+This can happen when the system forcefully destroys an activity to reclaim resources,
+bypassing the regular lifecycle flow.
+
+From Activity A, go to Activity B, then go back to Activity A, which methods of Activity A will be called?
+onRestart() of Activity A will be called when returning from Activity B to Activity A and then
+onStart() and onResume().
+
+How to restart an activity programmatically?
+You can restart an activity by creating a new Intent for the same activity and calling startActivity(intent).
+Intent intent = getIntent()
+finish()
+startActivity(intent)
+
+Explain how the back stack is managed in Android?
+The back stack is managed by the system and keeps track of the activities in the order they
+are opened. It is used for navigation and follows the Last In, First Out (LIFO) principle.
+
+What is the purpose of the onSaveInstanceState() method, and when is it called?
+onSaveInstanceState() is called before an activity is temporarily destroyed,
+allowing the saving of crucial data to be restored later during recreation.
+
+How does the launch mode of an activity affect its lifecycle?
+The launch mode determines how the system creates and maintains instances of the activity.
+Different launch modes can impact when and how lifecycle methods are called.
+
+Explain the role of onConfigurationChanged() in the activity lifecycle.
+onConfigurationChanged() is called when a configuration change occurs (e.g., screen rotation),
+allowing developers to handle such changes without the activity being recreated.
+
+What are some common scenarios where understanding the activity lifecycle is crucial for app development?
+Understanding the activity lifecycle is crucial when dealing with background tasks, handling user
+interactions, and managing resources to ensure a smooth user experience.
+
+How can you ensure that background tasks are not interrupted when an activity goes into the background?
+By appropriately managing background tasks in onPause() and onResume(), ensuring tasks are
+paused when the activity is not visible and resumed when it comes back into focus.
+
+How does the lifecycle of a Fragment differ from that of an Activity?
+Answer:
+While Fragments share similar lifecycle methods with Activities, their lifecycle is closely tied to
+their host Activity. Key differences include;
+onAttach(): Called when the Fragment is associated with its host Activity.
+onCreateView(): Called to create the view hierarchy associated with the Fragment.
+onActivityCreated(): Called when the host Activity's onCreate() method has completed.
+onDestroyView(): Called when the view hierarchy associated with the Fragment is being removed.
+onDetach(): Called when the Fragment is disassociated from its host Activity.
+These additional methods provide greater control over the Fragment's UI and interaction with the Activity.
+
+How can you manage communication between a Fragment and its host Activity?
+Answer:
+1. Shared ViewModel (Recommended for Most Cases)
+Concept: The ViewModel class is a part of the Android Architecture Components (Jetpack). A shared
+ViewModel instance can be scoped to the Activity, and both the Activity and its Fragments can access
+this same instance. This allows them to observe and update shared data.
+Advantages:
+Lifecycle Awareness: ViewModel survives configuration changes (like screen rotations), so data isn't lost.
+Data Sharing: It's perfect for sharing data that multiple Fragments or the Activity needs to access or modify.
+Loose Coupling: Fragments don't need to know about each other, only the ViewModel.
+Testability: ViewModels are easy to test independently.
+Use Cases:
+Sharing user data, application state, or data from a network call.
+Coordinating actions between different parts of the UI.
+2.The recommended approach for communication between a Fragment and its host Activity is through interfaces
+Define an Interface in the Fragment: Create an interface within the Fragment that outlines the
+methods for communication.
+Implement the Interface in the Activity: The host Activity implements this interface, providing
+concrete definitions for the communication methods.
+Attach the Interface to the Activity: In the Fragment's onAttach() method, obtain a reference to
+the host Activity and cast it to the interface type. Handle potential ClassCastException if the
+Activity does not implement the interface.
+3.Using FragmentResultsApi
+
+
+How does Android internally manage the back stack for Activities and Fragments?
+Answer:
+Android maintains a back stack to manage user navigation:
+Activities: When a new Activity is started, it's pushed onto the back stack. Pressing the back
+button pops the top Activity off the stack, revealing the previous one. The system manages
+this stack automatically.
+Fragments: Fragment transactions can be added to the back stack by calling addToBackStack()
+during the transaction. This allows users to navigate back to the previous Fragment state using
+the back button. Unlike Activities, managing the Fragment back stack requires explicit handling
+by the developer.
+Proper management of the back stack is essential for intuitive navigation within an application
+
+
+What are retained Fragments, and how do they help in preserving data across configuration changes?
+Answer:
+Retained Fragments are Fragments that are configured to be retained across Activity re-creation
+during configuration changes, such as screen rotations. By calling setRetainInstance(true) within
+the Fragment's onCreate() method, the Fragment instance is preserved, along with its member variables.
+Use Case:
+Retained Fragments are particularly useful for preserving non-UI related data, such as running
+threads or asynchronous tasks, across configuration changes without the need to reinitialize them.
+public class RetainedFragment extends Fragment {
+
+    private SomeDataObject data;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+        // Initialize data or start background tasks
+    }
+
+    // Getter and setter for 'data'
+}
+Considerations:
+--Lifecycle Awareness: Retained Fragments are not destroyed and recreated during configuration
+changes, so ensure that any resources they hold are properly managed to prevent memory leaks.
+--UI Components: Avoid retaining references to UI components within retained Fragments,
+as the associated Views will be destroyed and recreated, leading to potential memory leaks
+or null pointer exceptions.
+--While retained Fragments can be useful, the ViewModel architecture component is often preferred
+for managing UI-related data across configuration changes due to its lifecycle awareness
+and simplicity.
+
+
+How can you dynamically add and remove Fragments at runtime?
+Answer:
+Dynamic Fragment management allows developers to add, replace, or remove Fragments during the
+runtime of an application, providing flexibility in the UI. This is typically done using the
+FragmentManager and FragmentTransaction classes.
+Steps:
+Obtain FragmentManager: Call getSupportFragmentManager() within an AppCompatActivity or
+getFragmentManager() within a standard Activity.
+Begin Transaction: Invoke beginTransaction() on the FragmentManager to start a FragmentTransaction.
+Perform Operations: Use methods like add(), replace(), and remove() to specify the desired changes.
+Add to Back Stack (Optional): Call addToBackStack(null) if you want the transaction to be reversible
+when the user presses the back button.
+Commit Transaction: Finalize the transaction by calling commit().
+
+FragmentManager fragmentManager = getSupportFragmentManager();
+FragmentTransaction transaction = fragmentManager.beginTransaction();
+
+Fragment newFragment = new ExampleFragment();
+transaction.replace(R.id.fragment_container, newFragment);
+transaction.addToBackStack(null);
+transaction.commit();
+
+Considerations:
+Back Stack Management: Properly manage the back stack to ensure intuitive navigation. Each
+addToBackStack() call adds the transaction to the back stack, allowing users to reverse the
+transaction by pressing the back button.
+State Loss: Avoid committing transactions after onSaveInstanceState() has been called to prevent
+IllegalStateException due to state loss. Use commitAllowingStateLoss() if necessary, but be
+cautious as it may lead to inconsistent UI states.
+***********************************************************************************
+
+-->onCreate(Bundle savedInstanceState)
+1,Called when the activity is first created.
+2,Initialization of essential components, setting up the user interface, and
+performing one-time setup tasks.
+3,savedInstanceState is a Bundle object that allows you to save and restore the
+activity's state during configuration changes.
+
+-->onStart()
+1,Called when the activity becomes visible to the user.
+2,The activity is now in the foreground, but it might not yet be in an interactive state
+(e.g., the user might still be looking at a dialog).
+
+-->onResume()
+1,Called when the activity starts interacting with the user.
+2,This is the point where the activity is fully visible and in the foreground.
+3,Acquire resources that were released during onPause().
+
+-->onPause()
+1,Called when the activity is no longer in the foreground but still visible.
+2,Typically used for releasing resources that are unnecessary when the activity is not in the user’s focus.
+3,Should be used to save data that needs to persist between user interactions.
+
+-->onStop()
+1,Called when the activity is no longer visible to the user.
+2,This happens when another activity comes into the foreground or when the activity is being destroyed.
+3,Release resources that are not needed while the activity is not visible.
+
+-->onDestroy()
+1,Called when the activity is being destroyed.
+2,This can happen either because the user finished the activity or because the system is freeing up resources.
+3,Release all resources, unregister listeners, and perform cleanup.
+
+-->onRestart()
+1,Called when the activity is restarting after being stopped.
+2,Follows onStop() when the activity is stopped but not destroyed, and then the user navigates back to it.
+
+-->onSaveInstanceState(Bundle outState)
+1,Called before the activity is temporarily destroyed.
+2,Allows you to save any dynamic instance state (user data) to the outState Bundle.
+3,The system uses this Bundle to restore the state if the activity needs to be recreated.
+
+-->onRestoreInstanceState(Bundle savedInstanceState)
+1,Called after onStart() when the activity is being re-initialized from a previously saved state.
+2,The savedInstanceState Bundle contains the data saved in onSaveInstanceState().
+
+***********************************************************************************
+
+Importance of Activity Lifecycle
+1,Resource Management: Efficiently allocate and release system resources as an activity
+transitions through different states.
+2.State Preservation: Save and restore crucial data to maintain a consistent user
+experience during configuration changes.
+3.User Interaction Handling: Initialize and set up the user interface, respond to user
+input, and manage tasks as the activity becomes visible or goes into the background.
+4.Activity Transition and Visibility: Manage the visibility of activities to optimize
+resources and responsiveness based on user interactions.
+5.System Optimization: Contribute to overall device performance by stopping or
+destroying activities that are not currently in use.
+6.Handling Background Tasks: Pause or adjust background tasks appropriately based
+on the activity’s visibility.
+7.Lifecycle-aware Components: Utilize architecture components that automatically
+adapt to the activity’s lifecycle, enhancing the management of UI-related data.
+8.Data Persistence: Use lifecycle methods to save and restore data, ensuring important
+information is retained during various activity states.

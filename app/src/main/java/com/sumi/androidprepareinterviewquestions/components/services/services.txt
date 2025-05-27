@@ -1,0 +1,215 @@
+An Android Service is an android component that can perform long running operations in the
+background without a user interface. Its typically used for tasks which should run even the users
+switches to another app.
+
+When a service is started, it has a lifecycle independent if the component it started. The service
+can run indefinitely, even if the component that started is destroyed. Once the task is completed the
+service should stop itself by calling stopSelf() or another component can stop it by calling
+stopService().
+
+Android provides 3 main types of Services
+1. Foreground Service
+- Runs with high priority
+- Must display a persistent notification.
+- Used when the user is actively aware of the task.
+- This notification cannot be dismissed until the service is either stopped or removed from the
+foreground.
+
+Use Cases:
+1. Music Player
+2. Map Navigation
+3. Fitness Tracking
+
+startForegroundService(new Intent(this, MusicService.class));
+ServiceCompat.startForeground() - to self start as a service.
+
+public class MusicService extends Service {
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        Notification notification = new NotificationCompat.Builder(this, "channelId")
+            .setContentTitle("Playing Music")
+            .setSmallIcon(R.drawable.ic_music)
+            .build();
+
+        startForeground(1, notification);
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null; // not bound
+    }
+}
+
+
+2. Background Service
+- Runs without UI and user interaction.
+- Better option is to use WorkManager or JobIntentService
+
+Use cases:
+Uploading data
+Syncing data (e.g., email)
+startService(new Intent(this, SyncService.class));
+
+3. Bound Service
+- Provides a client-server interface for components to bind and interact.
+- Runs only while bound to other components.
+
+Use cases:
+Media players
+Bluetooth data exchange
+Download manager
+
+bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+
+Functions in service
+1. onCreate -> Where used to setup the initialization of the job/task.
+2. onStartCommand() -> Can be overridden to handle manually starting/stoping the service. Foreground
+and background services uses this to start the service. onBind() return set to null.
+3. onBind() -> Only called when started a service with bindService(), in this case it will not call
+onStartCommand().
+4. onDestroy() -> Used to cleanup threads, listeners or receivers.
+
+Example of Service Class:
+class HelloService: Service() {
+
+    private var serviceLooper: Looper? = null
+    private var serviceHandler: ServiceHandler? = null
+
+    //Handler that receives message from thread
+    private inner class ServiceHandler(looper:Looper): Handler(looper) {
+        override fun handleMessage(msg:Message) {
+            //Normally we do some work like downloading a file, but here we just sleep for 5 secs
+            try {
+            Thread.sleep(5000)
+            } catch(e:Exception) {
+            }
+
+            //Stop the service using the startId, so that we dont stop the service in the middle of
+            //handling another job
+            stopService(msd.arg1)
+        }
+    }
+
+    override fun onCreate() {
+    //Start up the thread running service, Note that we create a separate thread because the service
+    //normally runs in the main thread, which we do not want to block. We also make it background
+    //priority so CPU-intensive work will not disrupt our UI.
+        HandlerThread("ServiceStartArgs", Process.THREAD_PRIORITY_BACKGROUND).apply {
+            start()
+
+            serviceLooper = looper
+            serviceHandler = ServiceHandler(looper)
+        }
+    }
+
+    override fun onStartCommand(intent:Intent, flags:Int, startId:Int): Int {
+        //For each service start request, send a message to start a job and deliver the startID so we
+        //know which request er are stopping when we finish the job
+        serviceHandler?.obtainMessage()?.also { msg ->
+            msg.arg1 = startId
+            serviceHandler?.sendMessage(msg)
+        }
+
+        //Restart if killed by the system
+        return START_STICKY
+        //Do not restart or recreate on kill
+        return START_NOT_STICKY
+        //Recreates the service by calling onStartCommand when the service killed by the system
+        return START_REDELIVER_INTENT
+    }
+
+    override fun onBind(intent:Intent): IBinder? {
+        return null
+    }
+
+    override fun onDestroy() {
+
+    }
+
+}
+
+Example for a Bounded Service:
+public class LocalService extends Service {
+    private final IBinder binder = new LocalBinder();
+
+    public class LocalBinder extends Binder {
+        LocalService getService() {
+            return LocalService.this;
+        }
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        return binder;
+    }
+
+    public int getRandomNumber() {
+        return new Random().nextInt(100);
+    }
+}
+
+
+LocalService mService;
+boolean mBound = false;
+
+private ServiceConnection connection = new ServiceConnection() {
+    public void onServiceConnected(ComponentName className, IBinder service) {
+        LocalBinder binder = (LocalBinder) service;
+        mService = binder.getService();
+        mBound = true;
+    }
+
+    public void onServiceDisconnected(ComponentName arg0) {
+        mBound = false;
+    }
+};
+
+
+
+********************QUESTIONS********************
+
+1. Why are background services restricted in Android O and above?
+Answer:
+Starting from Android 8.0 (API level 26), background services are restricted to improve:
+Battery life
+Memory efficiency
+App performance
+User experience
+
+Key Changes:
+Apps cannot start background services while in the background.
+If an app tries to start a service while in the background, the system throws an IllegalStateException.
+Only foreground services (with a visible notification) are allowed for long-running tasks.
+
+Alternatives:
+Use JobScheduler, WorkManager, or ForegroundService for background tasks.
+
+2. How to ensure your service survives process death?
+
+To make a service survive process death:
+Option 1: Use START_STICKY
+In onStartCommand() of your service:
+@Override
+public int onStartCommand(Intent intent, int flags, int startId) {
+    return START_STICKY;
+}
+
+Option 2: Use a Foreground Service
+Foreground services are less likely to be killed, especially with proper notifications.
+startForeground(notificationId, notification);
+
+Option 3: Use WorkManager
+For truly persistent tasks that survive reboots and kills, prefer WorkManager.
+WorkManager.getInstance(context).enqueue(workRequest);
+
+3. Can two apps bind to the same service?
+Yes, but only if the service is exported and properly configured to allow interprocess communication (IPC).
+Requirements:
+- Service must be exported:
+<service
+    android:name=".MyService"
+    android:exported="true"
+    android:permission="com.example.permission.BIND_MY_SERVICE" />
+- AIDL (Android Interface Definition Language) must be used to define the interface between the service and the client apps.
+- Security checks are needed to prevent unauthorized access.

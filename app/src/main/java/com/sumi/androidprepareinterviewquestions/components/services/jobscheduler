@@ -1,0 +1,54 @@
+Here’s a complete example of how to use JobScheduler with constraints in Android, including
+setting up:
+
+JobScheduler API
+JobInfo with constraints
+A custom JobService
+Permission requirements
+
+<service
+    android:name=".MyJobService"
+    android:permission="android.permission.BIND_JOB_SERVICE"
+    android:exported="true" />
+
+<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+ComponentName componentName = new ComponentName(this, MyJobService.class);
+JobInfo jobInfo = new JobInfo.Builder(123, componentName)
+        .setRequiredNetworkType(JobInfo.NETWORK_TYPE_UNMETERED)  // Wi-Fi only
+        .setRequiresCharging(true)                                // Only when charging
+        .setRequiresDeviceIdle(false)                             // Optional
+        .setPersisted(true)                                       // Persist across reboots
+        .setPeriodic(15 * 60 * 1000)                              // Every 15 minutes (min limit)
+        .build();
+
+JobScheduler jobScheduler = (JobScheduler) getSystemService(JOB_SCHEDULER_SERVICE);
+jobScheduler.schedule(jobInfo);
+
+public class MyJobService extends JobService {
+    @Override
+    public boolean onStartJob(JobParameters params) {
+        Log.d("MyJobService", "Job started");
+
+        // Do background work here (on a separate thread if long)
+        new Thread(() -> {
+            // Simulated task
+            Log.d("MyJobService", "Performing job...");
+            try { Thread.sleep(3000); } catch (InterruptedException e) { }
+            Log.d("MyJobService", "Job finished");
+
+            // Mark job as finished
+            jobFinished(params, false);
+        }).start();
+
+        return true; // Work is still going
+    }
+
+    @Override
+    public boolean onStopJob(JobParameters params) {
+        Log.d("MyJobService", "Job stopped before completion");
+        return true; // Retry the job
+    }
+}
+
+

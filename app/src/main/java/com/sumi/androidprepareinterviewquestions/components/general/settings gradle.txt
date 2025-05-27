@@ -1,0 +1,20 @@
+The settings.gradle file plays a fundamental role in Android Studio projects, particularly in
+managing which modules are part of your project build. It is the entry point where the Gradle
+build system identifies all modules that make up the project. This file must list each module
+explicitly so that Gradle knows to include them in the build process.
+
+When you add multiple module to the project then the file contains like this;
+include ':app', ':library', ':feature'
+
+By default, the project name is derived from the directory name. You can override it in
+settings.gradle:
+
+// settings.gradle
+rootProject.name = "MyAwesomeProject"
+
+Defining Custom Module Paths:
+If your module folders are not in the root directory, you can specify their paths:
+
+// settings.gradle
+include(":app", ":library", ":feature")
+project(":library").projectDir = File("custom/path/to/library")

@@ -1,0 +1,127 @@
+The way these activities launch and interact with each other is governed by what we
+call “Launch Modes.”
+
+
+1. Standard Launch Mode
+Standard Launch Mode is like the default setting for activities. When you tap on an app
+icon and open it, a new instance of the activity is created.
+Key Points:
+-Default Setting: If you don’t specify a launch mode, it’s automatically set to Standard.
+-New Instance: Every time you launch the activity, a new instance is created.
+-Back Button Behavior: Pressing the back button takes you to the previous instance of the activity.
+Eg:
+// Launch Activity A again
+A -> B -> C -> A
+
+
+2. SingleTop Launch Mode
+In this launch mode if an instance of the activity already exists at the top of the current
+task, a new instance will not be created and the Android system will route the intent
+information through onNewIntent(). If an instance is not present on top of the task then
+a new instance will be created.
+KeyPoints:
+-Preferential Treatment: In SingleTop mode, if an instance of the activity already exists at
+the top of the stack (the activity the user currently sees), the system reuses that instance instead of creating a new one.
+-New Instances Otherwise: If the activity isn’t at the top of the stack, Android creates a new
+instance, just like in the Standard mode.
+-OnNewIntent Callback: If an activity instance is reused, the onNewIntent method is called,
+allowing you to handle the new intent data.
+// Launch Activity B again
+A -> B -> C -> B (In this case Activity B will use same instance as it is already on the top)
+
+
+3. SingleTask Launch Mode
+If an instance of activity exists on the task stack, a new instance will not be created and
+the Android system routes the intent information through onNewIntent() method. At a time only
+one instance of activity will exist.
+KeyPoints:
+-Reuse of Existing Instances: If an instance of the activity already exists in a task,
+the system reuses it instead of creating a new one, contributing to efficient task management.
+-Task Affiliation: Upon launch, if the activity is part of an existing task,
+it is brought to the foreground along with its existing instances. If the task
+doesn’t exist, a new task is created.
+-Clears Above Activities: Reusing an instance in SingleTask mode leads to the clearing of
+all activities above it in the task stack. This ensures the reused activity becomes the
+topmost in the stack.
+-OnNewIntent Callback: Similar to SingleTop, SingleTask activities trigger the onNewIntent
+method when reused, allowing for handling new intent data.
+// Launch some activities
+A -> B -> C -> D
+// Launch Activity B again
+A -> B (Old instance will be called)
+// Note: Activities C & D get destroyed
+
+Now, if you relaunch activity B, the system checks if there is already an instance of B in the
+current task. Since there is, it brings that instance to the foreground, making it the topmost
+activity. As a result, activities C and D, which were originally above B in the task stack,
+get cleared. This is consistent with the SingleTask launch mode’s behavior of reusing
+an existing instance and ensuring that the reused activity becomes the focus of the task.
+
+4. SingleInstance Lunch Mode
+This is a very special launch mode and is only used in applications that have only one activity.
+It is similar to singleTask except that no other activities will be created in the same task.
+Any other activity started from here will create a new task.
+KeyPoints:
+-Exclusive Task: An activity set with SingleInstance launch mode resides in a task exclusively
+ dedicated to that activity. No other activities can be part of this task.
+-Single Instance: Only one instance of the activity is allowed in the entire system. If the
+activity is already running in a different task, the system clears that task before creating
+a new one.
+-Task Isolation: The SingleInstance activity stands alone in its task, providing a unique and
+isolated user experience.
+-Back Stack Behavior: Pressing the back button from a SingleInstance activity does not navigate
+to the previous activity in the same task; instead, it exits the entire task.
+-No Affiliation with Other Tasks: SingleInstance activities do not share tasks with other
+activities, ensuring their separation.
+// Launch some activities
+A -> B -> C (This is Task1)
+// After launch of Activity D
+Task1 — A -> B -> C
+Task2 — D (here D will be in different task)
+// Launch one new Activity E
+Task1 — A -> B -> C -> E
+Task2 — D
+
+In this example, initiating the sequence, activities A, B, and C are launched, forming
+Task1 with the stack order A -> B -> C. Subsequently, Activity D is launched with the
+SingleInstance launch mode, creating a new task, Task2, exclusively for D. As a
+SingleInstance activity, D operates independently and is the sole occupant of Task2.
+When Activity E is launched, it gets added to the existing task, Task1, following the
+default behavior in the absence of specific launch modes. The task stack for Task1
+extends to A -> B -> C -> E. Simultaneously, Task2 remains unchanged, with Activity D
+maintaining its solitary presence.
+
+**************************************************************************************
+Other Questions
+
+What is the purpose of launch modes in Android activities?
+Launch modes define how instances of an activity are created and interact within an Android
+application.
+
+Explain the Standard launch mode in Android.
+Standard launch mode creates a new instance of the activity every time it’s launched,
+forming an independent stack.
+
+How does SingleTop launch mode differ from Standard?
+SingleTop checks if an instance of the activity is at the top of the stack; if yes,
+it reuses it; otherwise, it creates a new instance.
+
+In which scenario would you use SingleTask launch mode?
+SingleTask is useful when you want activities to be organized into tasks with a focus on
+specific functionalities.
+
+Describe the behavior of SingleInstance launch mode.
+SingleInstance creates a single instance of the activity in its own task, isolated from
+other activities, and exiting the entire task on the back button press.
+
+What happens when you launch a SingleInstance activity while another task is in the foreground?
+The existing task is cleared, and a new task is created exclusively for the SingleInstance
+activity.
+
+Can you reuse an instance of a SingleTask activity within the same task?
+Yes, if an instance of a SingleTask activity is already in the task, the system reuses it.
+
+How does the launch mode of an activity impact its interaction with the back button?
+The launch mode influences whether the back button navigates within the same task or exits the
+entire task, depending on the launch mode and task structure.
+

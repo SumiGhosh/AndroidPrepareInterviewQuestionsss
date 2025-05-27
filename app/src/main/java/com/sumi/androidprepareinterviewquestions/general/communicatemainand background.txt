@@ -1,0 +1,204 @@
+Communication between the main and background threads becomes crucial, ensuring that:
+-> Long-running tasks don’t block the UI: By offloading these tasks, the UI thread remains responsive.
+-> Data from background tasks can be displayed: Whether it’s showing data from a network request or
+updating a UI element, results from background threads are often needed on the main thread.
+-> Better resource management and control: By coordinating tasks between threads, we can manage
+resources more effectively and prevent potential crashes due to memory leaks or unhandled operations.
+
+1. Handler and Looper
+In Android, Handler and Looper work together to allow communication between threads, making it
+possible to send messages and run tasks on a specific thread
+
+-> Handler: A Handler allows you to send and process messages and runnable tasks associated with a
+thread’s Looper.
+
+-> Looper: Looper is a class that continuously runs in a loop, processing messages from a message
+queue on a particular thread.
+
+Example
+
+// Create a Handler associated with the main thread's Looper
+val mainHandler = object : Handler(Looper.getMainLooper()) { -> Initializes handler to run on main thread
+    override fun handleMessage(msg: Message) {
+        // Update the UI on the main thread with the message data
+        textView.text = msg.obj as String
+    }
+}
+
+// Start a background thread to perform a time-consuming task
+Thread {
+    // Simulate a time-consuming task
+    Thread.sleep(2000)
+
+    // Prepare a message to send to the main thread
+    val message = Message.obtain()
+    message.obj = "Task Completed!"
+
+    // Send the message to the main handler, which will handle it on the main thread
+    mainHandler.sendMessage(message) -> or we can use something like below
+    //or post result back to main thread
+    mainHandler.post( () -> {
+        textView.text = msg.obj as String
+    })
+}.start()
+
+Another example of handler in background thread
+
+class BackGroundThread extends Thread {
+    private Handler mHandler;
+
+    @override
+    pubic void run() {
+        Looker.prepare();
+        mHandler = new Handler(Looper.myLooper()) { -> initialized in background thread
+
+            @override
+            public void handleMessage(Message message) {
+                // this runs on the background thread
+            }
+        }
+
+        //To start the message loop
+        Looker.loop();
+    }
+}
+
+///In activity
+
+BackGroundThread bThread;
+
+onCreate() {
+   bThread = new BackGroundThread();
+   bThread.start();
+
+   new Handler(Looper.getMainThread()).postDelayed( () -> {
+        if(bThread.mHandler!=null) {
+            Message msg = Message.obtain();
+            msg.what = 1;
+            bThread.mHandler.sendMessage(msg);
+        }
+   },500);
+}
+
+2. Executor and ExecutorService
+
+The Executor framework in Android is a robust solution for managing background tasks with greater
+control, especially for handling multiple concurrent tasks. Executors provide a way to efficiently
+manage threads, reuse them, and control task execution without directly creating threads.
+
+Executor: An interface for launching tasks in a background thread.
+ExecutorService: An advanced implementation of Executor that allows you to manage a pool of
+threads and control task execution with methods like submit(), shutdown(), and invokeAll().
+
+// Create a main thread handler
+val mainHandler = Handler(Looper.getMainLooper())
+
+// Create an ExecutorService with a fixed thread pool of 2 threads
+val executorService = Executors.newFixedThreadPool(2)
+
+// Execute a background task
+executorService.execute {
+    // Simulate a time-consuming background task
+    val result = performLongRunningTask() // Replace with your actual task
+
+    // Post a runnable to update the UI on the main thread
+    mainHandler.post {
+        // Update UI, e.g., display result in a TextView
+        textView.text = result
+    }
+}
+
+// A function simulating a long-running task
+fun performLongRunningTask(): String {
+    Thread.sleep(2000) // Simulate delay
+    return "Task Completed!"
+}
+
+// Remember to shut down the executor when done (e.g., in onDestroy)
+executorService.shutdown()
+
+3. Kotlin coroutines
+
+Kotlin Coroutines offer a highly efficient and structured way to manage background tasks and
+simplify asynchronous programming in Android.
+
+Coroutines are managed through Coroutine Scopes and Dispatchers:
+
+Coroutine Scope: Defines the lifecycle of a coroutine, ensuring that tasks are canceled
+automatically when they’re no longer needed.
+Dispatchers: Control the thread on which a coroutine runs:
+Dispatchers.Main: Used for UI operations on the main thread.
+Dispatchers.IO: For I/O tasks, like network calls and database operations, which should run on
+background threads.
+Dispatchers.Default: For CPU-intensive tasks like sorting large lists.
+
+// Assume this is inside a CoroutineScope, e.g., a ViewModelScope or lifecycleScope in an Activity or Fragment
+
+// Launch a coroutine on the IO dispatcher for background work
+CoroutineScope(Dispatchers.IO).launch {
+    // Perform a long-running background task
+    val result = performLongRunningTask()
+
+    // Switch to the main dispatcher to update the UI
+    withContext(Dispatchers.Main) {
+        // Update the UI with the result, e.g., display in a TextView
+        textView.text = result
+    }
+}
+
+// Function simulating a time-consuming task
+suspend fun performLongRunningTask(): String {
+    delay(2000) // Simulate delay
+    return "Task Completed!"
+}
+
+Coroutine Launching: The coroutine is launched on Dispatchers.IO, so the task runs on a
+background thread suitable for I/O operations.
+Background Task: performLongRunningTask() simulates a delay using delay, a coroutine-friendly
+suspending function.
+Switching Context: After the background task completes, withContext(Dispatchers.Main) switches
+the coroutine back to the main thread for a safe UI update.
+Lifecycle Awareness: If you use scopes like viewModelScope or lifecycleScope, the coroutine
+automatically cancels when the scope’s lifecycle ends, helping to prevent memory leaks.
+
+4. WorkManager
+WorkManager is an Android library designed for managing background work that needs to be guaranteed
+and executed even if the app is not running.
+WorkManager is suitable for tasks that may need to run periodically or after specific conditions
+are met, such as network connectivity.
+
+Task Scheduling: Allows you to schedule tasks that can run at a later time and across app restarts.
+Chaining Work: You can create complex chains of tasks that depend on each other.
+Constraints: You can specify conditions under which the work should run, like requiring network
+connectivity or sufficient battery level.
+Lifecycle Awareness: WorkManager handles the execution of tasks based on the application’s
+lifecycle, ensuring that tasks are completed even if the app is killed.
+
+// Step 2: Create a Worker Class to define the background task
+class UploadWorker(ctx: Context, params: WorkerParameters) : Worker(ctx, params) {
+    override fun doWork(): Result {
+        // Perform the long-running task here, e.g., upload data
+        uploadDataToServer()
+
+        // Indicate whether the task finished successfully with the Result
+        return Result.success()
+    }
+
+    private fun uploadDataToServer() {
+        // Simulate data upload
+        Thread.sleep(2000) // Simulate a long-running operation
+    }
+}
+
+// Step 3: Enqueue the Work Request from your Activity or ViewModel
+// Create a WorkRequest for the UploadWorker
+val uploadWorkRequest = OneTimeWorkRequest.Builder(UploadWorker::class.java).build()
+
+// Enqueue the work
+WorkManager.getInstance(context).enqueue(uploadWorkRequest)
+
+Worker Class: The UploadWorker class extends Worker and overrides the doWork() method, where you
+define the background operation (like uploading data). The method returns a Result indicating the
+success or failure of the task.
+Enqueuing Work: You create a OneTimeWorkRequest and enqueue it with WorkManager. This schedules the
+UploadWorker to run when conditions are met.

@@ -1,0 +1,195 @@
+Recomposition in Jetpack Compose is the process where Compose re-evaluates a part of the UI when
+the state it depends on changes. Instead of redrawing the entire UI, Compose identifies and updates
+only those Composable functions whose inputs (state or data) have changed. This makes recomposition
+a highly efficient mechanism for building reactive and dynamic UIs.
+
+Important points
+1. Dynamic update: Auto update ui on data changes
+2. Efficiency: Update only the compose whose state have been changed.
+3. Declarative UI: We will design how ui looks in the given state.
+
+Triggering factors of Recomposition
+
+1. State changes - when mutableStateOf variable value changed
+@Composable
+fun Counter() {
+    var count by remember { mutableStateOf(0) } // State variable
+
+    Column(
+        modifier = Modifier.padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("Count: $count") // Dependent on state
+
+        Button(onClick = { count++ }) { // Changes state
+            Text("Increment")
+        }
+    }
+}
+2. Input changes - When parameter passed to composable act as triggers.
+@Composable
+fun Greeting(name: String) {
+    Text("Hello, $name!")
+}
+
+@Composable
+fun ParentComposable() {
+    var userName by remember { mutableStateOf("John") }
+
+    Column {
+        Greeting(name = userName) // Passes userName as a parameter
+
+        Button(onClick = { userName = "Alice" }) {
+            Text("Change Name")
+        }
+    }
+}
+3. Observable Changes - When a new data emit from LiveData or Flow
+@Composable
+fun TemperatureDisplay(temperature: State<Int>) {
+    Text("Temperature: ${temperature.value}°C")
+}
+
+@Composable
+fun ParentWithLiveData() {
+    val temperatureLiveData = MutableLiveData(25)
+    val temperature = temperatureLiveData.observeAsState(0) // Observes LiveData
+
+    Column {
+        TemperatureDisplay(temperature) // Passes observable state
+        Button(onClick = { temperatureLiveData.value = (20..30).random() }) {
+            Text("Update Temperature")
+        }
+    }
+}
+4. Scoped Values - Recomposition on Scoped values, (like remember).
+fun ComputedValueExample(input: Int) {
+    val derivedValue = remember(input) { input * 2 } // Recomputes only if input changes
+    Text("Derived Value: $derivedValue")
+}
+
+Optimization for Recomposition
+1. Use "remember" function allows you to store values across recompositions.
+@Composable
+fun RememberExample() {
+    var count by remember { mutableStateOf(0) }
+
+    val expensiveComputation = remember { computeExpensiveValue(count) }
+
+    Column {
+        Text("Computed Value: $expensiveComputation")
+        Button(onClick = { count++ }) {
+            Text("Increment Count")
+        }
+    }
+}
+
+fun computeExpensiveValue(input: Int): Int {
+    return input * 1000  // Simulate an expensive operation
+}
+
+
+2. Avoid Unnecessary State Changes
+@Composable
+fun EfficientStateUpdate() {
+    var count by remember { mutableStateOf(0) }
+    var extraState by remember { mutableStateOf("") }
+
+    Column {
+        Text("Count: $count")
+        Button(onClick = { count++ }) {
+            Text("Increment Count")
+        }
+        Button(onClick = { extraState = "Updated" }) {
+            Text("Update Extra State")
+        }
+    }
+}
+
+Here on changing extrastate can be moved into different function. So that the Text and Button above
+of this will not be recomposed.
+
+3.Use derivedStateOf for Expensive Computations
+4.Use Keys for List Items
+5.Use LaunchedEffect and SideEffect for Side-Effects
+
+
+**********************************QUESTIONS**************************
+What is recomposition in Jetpack Compose?
+Recomposition in Jetpack Compose refers to the process of re-executing composable functions when
+their state or inputs change, updating the UI accordingly.
+
+Why does Jetpack Compose only recompose parts of the UI?
+Jetpack Compose uses a smart mechanism to track state changes and only re-renders the affected
+parts of the UI tree, optimizing performance.
+
+What is the role of remember in Jetpack Compose?
+remember is used to store values across recompositions, ensuring that expensive operations or state
+changes do not trigger unnecessary recalculations.
+
+What does derivedStateOf do in Compose?
+derivedStateOf is used to create derived state that is recalculated only when the dependencies
+change, preventing unnecessary recompositions.
+
+@Composable
+fun FilteredListExample() {
+    val items = remember { mutableStateOf(listOf("apple", "banana", "grape", "orange")) }
+    val query = remember { mutableStateOf("") }
+
+    val filteredItems by remember {
+        derivedStateOf {
+            items.value.filter { it.contains(query.value, ignoreCase = true) }
+        }
+    }
+
+    Column {
+        TextField(value = query.value, onValueChange = { query.value = it })
+        LazyColumn {
+            items(filteredItems) { item ->
+                Text(item)
+            }
+        }
+    }
+}
+
+What's Happening:
+filteredItems is a derived state based on items and query.
+Compose won’t recalculate filteredItems unless query or items actually change.
+Prevents unnecessary filtering logic and recomposition.
+
+Why Use derivedStateOf?
+✅ Use it when:
+You're computing a value from other state(s).
+That value is expensive to compute.
+You want to avoid recomputing it during unrelated recompositions.
+
+Without derivedStateOf:
+If you just wrote:
+val filteredItems = items.value.filter { it.contains(query.value) }
+This code would recompute the filter on every recomposition, even if items or query didnt change.
+That’s inefficient.
+
+How can you optimize recompositions in Jetpack Compose?
+Optimizing recompositions can be done by using remember, derivedStateOf, minimizing the scope of
+composables, and using unique keys in lists.
+
+What happens when a state change triggers recomposition in Compose?
+When a state changes, Compose triggers recomposition for composables that depend on that state,
+ensuring the UI is updated with the new values.
+
+Can recomposition affect performance in Jetpack Compose?
+While recomposition is a necessary process, inefficient use of state and unnecessary recompositions
+can impact performance. Compose is designed to minimize this.
+
+What is the difference between remember and rememberUpdatedState in Jetpack Compose?
+remember stores a value across recompositions, while rememberUpdatedState ensures that a value is
+always up-to-date with the current state during recomposition.
+
+What is the significance of using key in lists in Jetpack Compose?
+The key ensures that each item in a list has a unique identity, allowing Compose to efficiently
+reuse and update list items during recomposition.
+
+What are side-effects in Jetpack Compose, and how are they handled?
+Side-effects, like network requests or logging, are handled using LaunchedEffect or SideEffect,
+which ensure they run only when specific states change, without triggering unnecessary
+recompositions.
