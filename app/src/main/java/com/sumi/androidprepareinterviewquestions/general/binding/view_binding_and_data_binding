@@ -1,0 +1,154 @@
+What is Two-Way Data Binding?
+
+One-Way Data Binding:
+ViewModel → View
+Example: UI observes LiveData, UI updates when data changes
+
+Two-Way Data Binding:
+ViewModel ↔ View
+ViewModel updates the UI, and UI changes (e.g., user input) also update to the ViewModel.
+
+How to Implement Two-Way Data Binding in Android MVVM?
+
+Enable Data Binding
+android {
+    ...
+    buildFeatures {
+        dataBinding true
+    }
+}
+
+ViewModel with ObservableField
+class UserViewModel : ViewModel() {
+    val userName = ObservableField<String>("")
+}
+
+<!-- res/layout/activity_main.xml -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+    <data>
+        <variable
+            name="viewModel"
+            type="com.example.app.UserViewModel" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <!-- Two-way binding with '@={...}' -->
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@={viewModel.userName}" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@{viewModel.userName}" />
+    </LinearLayout>
+</layout>
+
+- @={viewModel.userName} enables two-way binding
+- @{...} is one-way binding (for display)
+
+Bind ViewModel in Activity
+class MainActivity : AppCompatActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        val binding: ActivityMainBinding =
+            DataBindingUtil.setContentView(this, R.layout.activity_main)
+
+        val viewModel = UserViewModel()
+        binding.viewModel = viewModel
+        binding.lifecycleOwner = this
+    }
+}
+
+
+Under the Hood: How It Works?
+Data Binding generates a TextWatcher behind the scenes.
+When the user types into EditText, it triggers the setter on ObservableField.
+When ViewModel changes the field, the UI automatically updates.
+
+****************************************************************************************
+
+
+ViewBinding vs DataBinding
+Feature	                            ViewBinding	                            DataBinding
+Purpose	                        Simplifies view access	        Binds UI components directly to data
+Generated Class	                   ActivityMainBinding	            ActivityMainBinding (with extra features)
+Binding Expressions in XML	        ❌ Not supported	                ✅ Supported (e.g., @{viewModel.name})
+Two-way Data Binding	            ❌ Not supported	        ✅ Fully supported (e.g., @={viewModel.field})
+Logic in XML	                    ❌ Cannot add logic	        ✅ Can add logic (@{user.age > 18 ? "Adult" : "Minor"})
+Performance	                    🔼 Faster, less overhead	    🔽 Slightly heavier due to XML parsing & reflection
+Lifecycle Awareness	                ❌ Manual handling needed	✅ Supports LiveData, observes automatically
+Use Case	                    Simple UI with no logic in XML	MVVM, reactive UIs with LiveData/ViewModel
+Learning Curve	                        Very easy	            Moderate to steep (due to expressions, adapters, etc.)
+Custom BindingAdapters	                ❌ No	                                ✅ Yes
+Kotlin Support	                        ✅ Full	                                ✅ Full
+
+
+****************************************************************************************
+ViewBinding and DataBinding are both Android tools used to interact with XML layouts without using
+findViewById(), but they serve different purposes and have distinct capabilities.
+
+✅ Example: ViewBinding
+android {
+    buildFeatures {
+        viewBinding true
+    }
+}
+
+class MainActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityMainBinding
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        binding.textView.text = "Hello ViewBinding"
+    }
+}
+
+
+✅ Example: DataBinding
+android {
+    buildFeatures {
+        dataBinding true
+    }
+}
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+    <data>
+        <variable
+            name="user"
+            type="com.example.User" />
+    </data>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@{user.name}" />
+</layout>
+
+
+val binding: ActivityMainBinding =
+    DataBindingUtil.setContentView(this, R.layout.activity_main)
+
+val user = User("Alice")
+binding.user = user
+
+🧠 When to Use What?
+| Use Case                            | Choose            |
+| ----------------------------------- | ----------------- |
+| Just need to avoid `findViewById()` | ✅ **ViewBinding** |
+| MVVM architecture with LiveData     | ✅ **DataBinding** |
+| Need dynamic expressions in XML     | ✅ **DataBinding** |
+| Simple project, performance-focused | ✅ **ViewBinding** |
+| UI reacts to changes in ViewModel   | ✅ **DataBinding** |
+
+
+

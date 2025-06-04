@@ -1,0 +1,116 @@
+Android MVVM is an architectural pattern that helps separate concerns(separate the UI (View) from
+the business logic (Model) using an intermediate ViewModel) in Android applications,
+making code more modular, testable and maintainable.
+
+Components:
+1. Model
+- Represent the data and business logic
+- Handles data sources(local DB, network, etc..)
+Eg: Repository classes, Data models
+
+2. View
+- UI Layer(Activity, Fragment or Composable in Jetpack Compose)
+- Observes ViewModel for data changes and displays them
+- Sends user actions to ViewModel
+
+3. ViewModel
+- Acts as a bridge between View and Model.
+- Holds UI related data using LiveData, StateFlow or State
+- Handles logic for UI, processes user actions and updates the view
+
+Example
+
+1. Model
+
+data class User(val id:Int, val name: String)
+
+class UserRepository {
+
+    fun getUser(): User {
+        return User(1,"Sumi Ghosh")
+    }
+
+}
+
+2. ViewModel
+
+class UserViewModel(private val repository: UserRepository): ViewModel() {
+    private val _user = MutableLiveData<User>()
+    val user: LiveData<User> = _user
+
+    fun loadUser() {
+        _user.value = repository.getUser()
+    }
+}
+
+
+3. View
+
+class UserActivity: AppCompatActivity() {
+    private val viewModel: UserViewModel by viewModels {
+        UserViewModelFactory(UserRepository())
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_user)
+
+        viewModel.user.observe(this) { user ->
+            findViewById<TextView>(R.id.username).text = user.name
+        }
+
+        viewModel.loadUser()
+    }
+}
+
+or
+
+@Composable
+fun UserScreen(viewModel: UserViewModel = viewModel()) {
+
+    val user by viewModel.user.observeAsState()
+
+    user?.let {
+        Text(text = user.name)
+    }
+}
+
+
+************************Data Flow****************************
+- View observes on data change (LiveData/StateFlow/State)
+- ViewModel processes the events and fetches data from the model.
+- Models get data from API/DataBase and other local storage.
+- UI is automatically updated when LiveData/StateFlow changes
+
+
+
+****************************************************************
+What is MVVM and why use it in Android?
+Separation of concerns, testability, and lifecycle awareness.
+
+How does ViewModel differ from Presenter (MVP)?
+ViewModel is lifecycle-aware and doesn't hold a reference to the View.
+
+What is LiveData?
+Lifecycle-aware observable data holder.
+
+Why use ViewModel instead of passing data directly to the view?
+ViewModel survives configuration changes like screen rotations.
+
+How do you handle one-time events (like Toasts) in MVVM?
+Use SingleLiveEvent, SharedFlow, or EventWrapper.
+
+What happens to the ViewModel when the Activity is destroyed?
+If using ViewModelProvider, it survives until the scope (Activity/Fragment) is permanently gone.
+
+How to implement two-way data binding in MVVM?
+Use @Bindable with BaseObservable, or Data Binding with ObservableField.
+
+How would you test the ViewModel?
+Using JUnit + MockK/Mockito to mock the repository and test LiveData outputs.
+
+How does MVVM handle background threads?
+Typically with Kotlin Coroutines or RxJava in ViewModel using viewModelScope.
+
+How does Jetpack Compose change MVVM usage?
+Jetpack Compose pairs well with StateFlow or LiveData, simplifying View logic and reducing boilerplate.

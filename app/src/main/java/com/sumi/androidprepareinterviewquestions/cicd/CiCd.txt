@@ -18,7 +18,6 @@ CD (Continuous Deployment)
 * Same procedures, except here manual approval is not required, once the test cases are passed the changes are automatically
 deployed to the production environment.
 
-
 Check Workflow yml file for details to set up custom GithubAction Workflow
 
 https://github.com/SumiGhosh/CICDApp

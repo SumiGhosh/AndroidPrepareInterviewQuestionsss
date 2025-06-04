@@ -1,0 +1,105 @@
+MVP (Model-View-Presenter) is a design architecture that separates:
+Model: Data layer (business logic, API, DB)
+View: UI (Activity/Fragment)
+Presenter: Middleman between Model and View — handles logic
+
+MVP Flow
+User interacts with → View
+         ↓
+View delegates to → Presenter
+         ↓
+Presenter interacts with → Model (fetch data)
+         ↓
+Model returns result to → Presenter
+         ↓
+Presenter updates → View
+
+
+1.Model
+
+interface LoginModel {
+    fun login(username: String, password: String, callback: LoginCallback)
+}
+
+interface LoginCallback {
+    fun onSuccess()
+    fun onError(error: String)
+}
+
+class LoginModelImpl : LoginModel {
+    override fun login(username: String, password: String, callback: LoginCallback) {
+        if (username == "admin" && password == "1234") {
+            callback.onSuccess()
+        } else {
+            callback.onError("Invalid credentials")
+        }
+    }
+}
+
+
+2.View Interface
+
+interface LoginView {
+    fun showProgress()
+    fun hideProgress()
+    fun showLoginSuccess()
+    fun showLoginError(message: String)
+}
+
+
+3.Presenter
+
+class LoginPresenter(private val view: LoginView, private val model: LoginModel) {
+
+    fun onLoginClicked(username: String, password: String) {
+        view.showProgress()
+
+        model.login(username, password, object : LoginCallback {
+            override fun onSuccess() {
+                view.hideProgress()
+                view.showLoginSuccess()
+            }
+
+            override fun onError(error: String) {
+                view.hideProgress()
+                view.showLoginError(error)
+            }
+        })
+    }
+}
+
+
+4. View
+class LoginActivity : AppCompatActivity(), LoginView {
+
+    private lateinit var presenter: LoginPresenter
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_login)
+
+        presenter = LoginPresenter(this, LoginModelImpl())
+
+        findViewById<Button>(R.id.btnLogin).setOnClickListener {
+            val username = findViewById<EditText>(R.id.etUsername).text.toString()
+            val password = findViewById<EditText>(R.id.etPassword).text.toString()
+            presenter.onLoginClicked(username, password)
+        }
+    }
+
+    override fun showProgress() {
+        Toast.makeText(this, "Logging in...", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun hideProgress() {
+        // Do nothing for now
+    }
+
+    override fun showLoginSuccess() {
+        Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun showLoginError(message: String) {
+        Toast.makeText(this, "Error: $message", Toast.LENGTH_SHORT).show()
+    }
+}

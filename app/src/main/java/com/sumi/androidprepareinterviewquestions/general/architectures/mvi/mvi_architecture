@@ -1,0 +1,136 @@
+MVI is an uni directional data flow architecture.
+It follows the approach of Single Source of Truth and predictable state updates.
+This is ideal for reactive UIs especially with JetPack Compose.
+
+🔄 MVI Flow
+User Intent (UI Action)
+      ↓
+Intent (UI sends event to ViewModel)
+      ↓
+ViewModel processes Intent, triggers Use Case / Repository
+      ↓
+Model returns data
+      ↓
+ViewModel reduces data into a new UI State
+      ↓
+View observes State and updates UI
+
+
+MVI Components
+| Layer         | Role                                     |
+| ------------- | ---------------------------------------- |
+| **Intent**    | User actions (e.g., AddTodo, DeleteTodo) |
+| **State**     | Immutable UI representation              |
+| **ViewModel** | Reduces Intents → State                  |
+| **View (UI)** | Renders based on state and emits intents |
+
+
+Model
+data class Todo(
+    val id: Int,
+    val title: String,
+    val isDone: Boolean = false
+)
+
+
+Intent
+sealed class TodoIntent {
+    data class AddTodo(val title: String) : TodoIntent()
+    data class ToggleTodo(val id: Int) : TodoIntent()
+    data class DeleteTodo(val id: Int) : TodoIntent()
+}
+
+State
+data class TodoState(
+    val todos: List<Todo> = emptyList()
+)
+
+ViewModel
+class TodoViewModel : ViewModel() {
+
+    private var nextId = 0
+
+    private val _state = MutableStateFlow(TodoState())
+    val state: StateFlow<TodoState> = _state
+
+    fun processIntent(intent: TodoIntent) {
+        when (intent) {
+            is TodoIntent.AddTodo -> {
+                val newTodo = Todo(id = nextId++, title = intent.title)
+                _state.update { it.copy(todos = it.todos + newTodo) }
+            }
+
+            is TodoIntent.ToggleTodo -> {
+                _state.update {
+                    val updated = it.todos.map { todo ->
+                        if (todo.id == intent.id) todo.copy(isDone = !todo.isDone) else todo
+                    }
+                    it.copy(todos = updated)
+                }
+            }
+
+            is TodoIntent.DeleteTodo -> {
+                _state.update {
+                    it.copy(todos = it.todos.filterNot { todo -> todo.id == intent.id })
+                }
+            }
+        }
+    }
+}
+
+UI Screen
+@Composable
+fun TodoScreen(viewModel: TodoViewModel = viewModel()) {
+    val state by viewModel.state.collectAsState()
+    var newTitle by remember { mutableStateOf("") }
+
+    Column(modifier = Modifier.padding(16.dp)) {
+        Row {
+            TextField(
+                value = newTitle,
+                onValueChange = { newTitle = it },
+                label = { Text("New Todo") },
+                modifier = Modifier.weight(1f)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Button(onClick = {
+                if (newTitle.isNotBlank()) {
+                    viewModel.processIntent(TodoIntent.AddTodo(newTitle))
+                    newTitle = ""
+                }
+            }) {
+                Text("Add")
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        LazyColumn {
+            items(state.todos) { todo ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp)
+                ) {
+                    Checkbox(
+                        checked = todo.isDone,
+                        onCheckedChange = {
+                            viewModel.processIntent(TodoIntent.ToggleTodo(todo.id))
+                        }
+                    )
+                    Text(
+                        text = todo.title,
+                        modifier = Modifier.weight(1f)
+                    )
+                    IconButton(onClick = {
+                        viewModel.processIntent(TodoIntent.DeleteTodo(todo.id))
+                    }) {
+                        Icon(Icons.Default.Delete, contentDescription = "Delete")
+                    }
+                }
+            }
+        }
+    }
+}
+

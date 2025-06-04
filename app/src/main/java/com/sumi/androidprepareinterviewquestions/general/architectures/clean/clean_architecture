@@ -1,0 +1,128 @@
+Everything is organized in layers, with clear dependency rules.
+Means inner layer doesn't know about outer layer.
+
+Clean Architecture Layers:
+
+      +------------------+
+      |     UI Layer     | ← Activities, Fragments, Compose
+      +------------------+
+               ↓
+      +------------------+
+      |  Presentation     | ← ViewModels, Presenters
+      +------------------+
+               ↓
+      +------------------+
+      |   Domain Layer    | ← UseCases, Business logic
+      +------------------+
+               ↓
+      +------------------+
+      |   Data Layer      | ← Repositories, APIs, DBs
+      +------------------+
+
+
+Rules of Dependency:
+UI → Presentation → Domain → Data
+Domain depends on nothing
+Data implements interfaces defined in Domain
+
+Sample app we'll build this with:
+ViewModel (Presentation)
+UseCases (Domain)
+Repository + Local DataSource (Data)
+
+1. Domain Layer
+
+data class Todo(val id: Int, val title: String, val isDone: Boolean)
+
+interface TodoRepository {
+    suspend fun getTodos(): List<Todo>
+    suspend fun addTodo(todo: Todo)
+}
+
+class GetTodosUseCase(private val repository: TodoRepository) {
+    suspend operator fun invoke(): List<Todo> = repository.getTodos()
+}
+
+class AddTodoUseCase(private val repository: TodoRepository) {
+    suspend operator fun invoke(todo: Todo) = repository.addTodo(todo)
+}
+
+2. Data Layer
+
+class TodoRepositoryImpl(
+    private val localDataSource: LocalDataSource
+) : TodoRepository {
+    override suspend fun getTodos(): List<Todo> = localDataSource.getAll()
+    override suspend fun addTodo(todo: Todo) = localDataSource.insert(todo)
+}
+
+interface LocalDataSource {
+    suspend fun getAll(): List<Todo>
+    suspend fun insert(todo: Todo)
+}
+
+class InMemoryDataSource : LocalDataSource {
+    private val todos = mutableListOf<Todo>()
+    override suspend fun getAll(): List<Todo> = todos
+    override suspend fun insert(todo: Todo) {
+        todos.add(todo)
+    }
+}
+
+3. Presentation Layer
+class TodoViewModel(
+    private val getTodos: GetTodosUseCase,
+    private val addTodo: AddTodoUseCase
+) : ViewModel() {
+
+    private val _todos = MutableStateFlow<List<Todo>>(emptyList())
+    val todos: StateFlow<List<Todo>> = _todos
+
+    fun loadTodos() {
+        viewModelScope.launch {
+            _todos.value = getTodos()
+        }
+    }
+
+    fun addTodo(title: String) {
+        viewModelScope.launch {
+            addTodo(Todo(id = _todos.value.size + 1, title = title, isDone = false))
+            loadTodos()
+        }
+    }
+}
+
+4. UI Layer
+
+@Composable
+fun TodoScreen(viewModel: TodoViewModel) {
+    val todos by viewModel.todos.collectAsState()
+    // Display list and input...
+}
+
+
+What is Clean Architecture?
+A layered architecture that separates concerns and enforces dependency rules. Each layer has a
+specific role.
+
+Why use Clean Architecture?
+It improves testability, maintainability, scalability, and makes features independent of
+frameworks.
+
+What goes in the Domain layer?
+Business logic: UseCases, Entities, and Interfaces.
+
+How does Data layer relate to Domain?
+It implements interfaces defined in Domain. Domain never knows about Data.
+
+Can ViewModels use Repositories directly?
+No, ViewModels use UseCases from the Domain layer.
+
+How to test UseCases in Clean Architecture?
+Mock the repository interface and verify the logic independently.
+
+Is Clean Architecture overkill for small projects?
+Sometimes. You can simplify it by merging layers early and modularizing later.
+
+
+
